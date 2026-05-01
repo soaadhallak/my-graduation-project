@@ -1,5 +1,7 @@
 <?php
 
+use Spatie\LaravelData\Mappers\SnakeCaseMapper;
+
 return [
     /*
      * The package will use this format when working with dates. If this option
@@ -133,7 +135,7 @@ return [
      */
     'name_mapping_strategy' => [
         'input' => null,
-        'output' => null,
+        'output' => \Spatie\LaravelData\Mappers\SnakeCaseMapper::class,
     ],
 
     /*

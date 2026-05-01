@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "6618f8d7343934bf54cc4c49e567d297",
+    "content-hash": "fb7d073fb2e3703fba46bb423c847592",
     "packages": [
         {
             "name": "brick/math",
@@ -2388,6 +2388,71 @@
                 }
             ],
             "time": "2026-01-02T08:56:05+00:00"
+        },
+        {
+            "name": "mustafafares/laravel-auto-crud",
+            "version": "v5.0.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/MustafaFares445/laravel-auto-crud.git",
+                "reference": "7bf73b6f5525d2faa720205fdf96de2cc73bad64"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/MustafaFares445/laravel-auto-crud/zipball/7bf73b6f5525d2faa720205fdf96de2cc73bad64",
+                "reference": "7bf73b6f5525d2faa720205fdf96de2cc73bad64",
+                "shasum": ""
+            },
+            "require": {
+                "illuminate/support": "^10.0|^11.0|^12.0",
+                "laravel/prompts": "*",
+                "php": ">=8.1",
+                "spatie/laravel-data": "*"
+            },
+            "require-dev": {
+                "laravel/pint": "*",
+                "mockery/mockery": "*",
+                "orchestra/testbench": "^9.9",
+                "pestphp/pest": "^3.7"
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "Mrmarchone\\LaravelAutoCrud\\LaravelAutoCrudServiceProvider"
+                    ]
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Mrmarchone\\LaravelAutoCrud\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Mustafa Fares",
+                    "email": "mustafa.fares.dev@gmail.com"
+                }
+            ],
+            "description": "Laravel Auto CRUD helps you streamline development and save time.",
+            "support": {
+                "source": "https://github.com/MustafaFares445/laravel-auto-crud/tree/v5.0.1"
+            },
+            "funding": [
+                {
+                    "url": "https://www.buymeacoffee.com/mrmarchone",
+                    "type": "buy_me_a_coffee"
+                },
+                {
+                    "url": "https://github.com/mrmarchone",
+                    "type": "github"
+                }
+            ],
+            "time": "2026-02-20T13:33:34+00:00"
         },
         {
             "name": "nesbot/carbon",
