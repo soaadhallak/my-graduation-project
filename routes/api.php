@@ -5,6 +5,7 @@ use App\Http\Controllers\Api\Auth\PasswordResetController;
 use App\Http\Controllers\Api\Auth\SocialAuthController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\API\Auth\GithubProjectController;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -21,5 +22,5 @@ Route::prefix('auth')->group(function(){
 Route::apiResource('/users', App\Http\Controllers\API\UserController::class);
 
 
-Route::get('auth/github', [SocialAuthController::class, 'redirectToGitHub'])->middleware('auth:sanctum');
-Route::get('auth/github/callback', [SocialAuthController::class, 'handleGitHubCallback']);
+Route::post('github/repositories', [GithubProjectController::class, 'getRepositories'])->middleware('auth:sanctum');
+Route::post('github/initialize-project', [GithubProjectController::class, 'initializeProject'])->middleware('auth:sanctum');
