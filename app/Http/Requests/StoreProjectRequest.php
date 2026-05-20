@@ -3,23 +3,16 @@
 namespace App\Http\Requests;
 
 use Illuminate\Contracts\Validation\ValidationRule;
-use App\Models\Project;
 use Illuminate\Foundation\Http\FormRequest;
 
-class InviteMemberRequest extends FormRequest
+class StoreProjectRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
      */
     public function authorize(): bool
     {
-        $project = $this->route('project');
-
-        if (! $project) {
-            return false;
-        }
-
-        return $this->user()->can('invite', $project);
+        return true;
     }
 
     /**
@@ -30,8 +23,8 @@ class InviteMemberRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'email' => ['required', 'email'],
-            'role' => ['required', 'string', 'in:project_manager,developer,tester'],
+            'name' => ['required', 'string', 'max:255'],
+            'description' => ['nullable', 'string'],
         ];
     }
 }

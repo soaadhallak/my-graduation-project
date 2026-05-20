@@ -16,14 +16,12 @@ use Illuminate\Support\Str;
 class InviteMemberAction
 {
 
-    public function execute(InviteMemberData $inviteMemberData): Invitation
+    public function execute(InviteMemberData $inviteMemberData, Project $project): Invitation
     {
-        return DB::transaction(function () use ($inviteMemberData) {
-
-            $project = Project::findOrFail($inviteMemberData->projectId);
+        return DB::transaction(function () use ($inviteMemberData, $project) {
 
             $invitation = Invitation::create([
-                'project_id' => $inviteMemberData->projectId,
+                'project_id' => $project->id,
                 'token' => Str::random(32),
                 'email' => $inviteMemberData->email,
                 'status' => InvitationStatus::PENDING,
@@ -33,7 +31,6 @@ class InviteMemberAction
 
             $user = User::where('email', $inviteMemberData->email)->first();
             event(new MemberInvited($invitation, $project->name, $user->name));
-
 
             return $invitation;
         });

@@ -2,40 +2,38 @@
 
 namespace App\Services;
 
+use App\Data\ProjectData;
 use App\Models\Project;
+use App\Models\ProjectUser;
+use App\Models\User;
 use Illuminate\Support\Facades\DB;
 
 class ProjectService
 {
-    public function store(array $data): Project
+    public function store(ProjectData $data, User $user): Project
     {
-        return DB::transaction(function () use ($data) {
-            return Project::create($data);
-        });
-    }
+        return DB::transaction(function () use ($data, $user) {
+            $project = Project::create($data->onlyModelAttributes());
 
-    public function update(Project $project, array $data): Project
-    {
-        return DB::transaction(function () use ($project, $data) {
-            tap($project)->update($data);
+            ProjectUser::create([
+                'project_id' => $project->id,
+                'user_id'    => $user->id,
+                'role'       => 'project_manager',
+            ]);
+
+            setPermissionsTeamId($project->id);     
+            $user->assignRole('project_manager');
+
             return $project;
         });
     }
 
-    public function delete(Project $project): bool
+    public function update(ProjectData $data,  Project $project): Project
     {
-        return DB::transaction(function () use ($project) {
-            return $project->delete();
+        return DB::transaction(function () use ($data, $project) {
+            tap($project)->update($data->onlyModelAttributes());
+
+            return $project;
         });
-    }
-
-    public function getAll()
-    {
-        return Project::latest()->get();
-    }
-
-    public function getById(Project $project)
-    {
-        return $project;
     }
 }

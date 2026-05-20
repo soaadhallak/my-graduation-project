@@ -1,15 +1,4 @@
 <?php
-
-/*namespace App\Http\Controllers\Api;
-
-use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-
-class ProjectController extends Controller
-{
-    //
-}*/
-
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
@@ -18,51 +7,77 @@ use App\Services\ProjectService;
 use App\Actions\Projects\CreateProjectAction;
 use App\Actions\Projects\UpdateProjectAction;
 use App\Actions\Projects\DeleteProjectAction;
+use App\Data\ProjectData;
+use App\Http\Requests\StoreProjectRequest;
+use App\Http\Requests\UpdateProjectRequest;
 use App\Http\Resources\ProjectResource;
+use Illuminate\Support\Facades\Auth;
+use Mrmarchone\LaravelAutoCrud\Enums\ResponseMessages;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Gate;
 
 class ProjectController extends Controller
 {
-    public function __construct(private ProjectService $service) {}
+    public function __construct(private ProjectService $projectService) {}
 
-    // 📌 عرض كل المشاريع
-    public function index()
+
+    public function index(): AnonymousResourceCollection
     {
-        return ProjectResource::collection(
-            $this->service->getAll()
-        );
+        $projects= Auth::user()->projects->latest()->get();
+
+        return ProjectResource::collection($projects)
+            ->additional([
+                'message' => ResponseMessages::RETRIEVED->message()
+            ]);          
     }
 
-    // 📌 إنشاء مشروع
-    public function store(CreateProjectAction $action)
-    {
-        $project = $action->execute(request()->all());
 
-        return new ProjectResource($project);
+    public function store(StoreProjectRequest $request): JsonResponse
+    {
+        $project = $this->projectService->store(ProjectData::from($request->validated()), Auth::user());
+
+        return ProjectResource::make($project)
+            ->additional([
+                'message' => ResponseMessages::CREATED->message()
+            ])
+            ->response()
+            ->setStatusCode(201);
     }
 
-    // 📌 عرض مشروع واحد
-    public function show(Project $project)
+    public function show(Project $project): ProjectResource
     {
-        return new ProjectResource(
-            $this->service->getById($project)
-        );
+        Gate::authorize('view', $project);
+
+        return ProjectResource::make($project)
+            ->additional([
+                'message' => ResponseMessages::RETRIEVED->message()
+            ]);
     }
 
-    // 📌 تعديل مشروع
-    public function update(Project $project, UpdateProjectAction $action)
-    {
-        $updated = $action->execute($project, request()->all());
 
-        return new ProjectResource($updated);
+    public function update(Project $project, UpdateProjectRequest $request): ProjectResource
+    {
+        Gate::authorize('update', $project);
+
+        $project = $this->projectService->update(ProjectData::from($request->validated()), $project);
+
+        return ProjectResource::make($project)
+            ->additional([
+                'message' => ResponseMessages::UPDATED->message()
+            ]);
     }
 
-    // 📌 حذف مشروع
-    public function destroy(Project $project, DeleteProjectAction $action)
-    {
-        $action->execute($project);
 
-        return response()->json([
-            'message' => 'Project deleted successfully'
-        ]);
+    public function destroy(Project $project): ProjectResource
+    {
+        Gate::authorize('delete', $project);
+        
+        $project->delete();
+
+        return ProjectResource::make($project)
+            ->additional([
+                'message' => ResponseMessages::DELETED->message()
+            ]);
     }
 }

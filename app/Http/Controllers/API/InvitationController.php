@@ -10,6 +10,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\AcceptInvitationRequest;
 use App\Http\Requests\InviteMemberRequest;
 use App\Http\Resources\InvitationResource;
+use App\Models\Project;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
@@ -17,8 +18,9 @@ use Mrmarchone\LaravelAutoCrud\Enums\ResponseMessages;
 
 class InvitationController extends Controller
 {
-    public function inviteMember(InviteMemberRequest $request, InviteMemberAction $inviteMemberAction) {
-        $invitations = $inviteMemberAction->execute(InviteMemberData::from($request->validated()));
+    public function inviteMember(InviteMemberRequest $request, InviteMemberAction $inviteMemberAction, Project $project)
+    {
+        $invitations = $inviteMemberAction->execute(InviteMemberData::from($request->validated()), $project);
 
         return InvitationResource::make($invitations->load(['project', 'user']))
             ->additional([
@@ -27,7 +29,8 @@ class InvitationController extends Controller
             ->setStatusCode(Response::HTTP_CREATED);
     }
 
-    public function acceptInvitation(AcceptInvitationRequest $request, AcceptInvitationAction $acceptInvitationAction) {
+    public function acceptInvitation(AcceptInvitationRequest $request, AcceptInvitationAction $acceptInvitationAction) 
+    {
         $invitation=$acceptInvitationAction->execute(Auth::user(), AcceptInvitationData::from($request->validated()));
 
         return InvitationResource::make($invitation->load(['user']))

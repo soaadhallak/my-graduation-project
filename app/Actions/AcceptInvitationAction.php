@@ -11,8 +11,6 @@ use Illuminate\Support\Facades\DB;
 
 class AcceptInvitationAction
 {
-
-
     public function execute(User $user, AcceptInvitationData $acceptInvitationData)
     {
         $invitation = Invitation::where('token', $acceptInvitationData->token)
