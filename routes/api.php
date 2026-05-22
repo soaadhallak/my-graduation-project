@@ -28,5 +28,5 @@ Route::apiResource('projects', ProjectController::class)->middleware(['auth:sanc
 Route::post('github/repositories', [GithubProjectController::class, 'getRepositories'])->middleware('auth:sanctum');
 Route::post('github/initialize-project', [GithubProjectController::class, 'initializeProject'])->middleware('auth:sanctum');
 
-Route::post('invitations/{project}/invite', [InvitationController::class, 'inviteMember'])->middleware(['auth:sanctum', 'role']);
-Route::post('invitations/accept', [App\Http\Controllers\API\InvitationController::class, 'acceptInvitation'])->middleware('auth:sanctum');
+Route::post('invitations/{project}/invite', [InvitationController::class, 'inviteMember'])->middleware(['auth:sanctum']);
+Route::post('invitations/accept', [InvitationController::class, 'acceptInvitation'])->middleware('auth:sanctum');

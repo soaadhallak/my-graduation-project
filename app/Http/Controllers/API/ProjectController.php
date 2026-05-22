@@ -24,7 +24,9 @@ class ProjectController extends Controller
 
     public function index(): AnonymousResourceCollection
     {
-        $projects= Auth::user()->projects->latest()->get();
+        $projects = Project::whereHas('members', function ($query) {
+            $query->where('user_id', Auth::id());
+        })->latest()->get();
 
         return ProjectResource::collection($projects)
             ->additional([
