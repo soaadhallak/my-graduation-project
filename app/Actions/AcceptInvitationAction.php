@@ -1,5 +1,7 @@
 <?php
+
 namespace App\Actions;
+
 use App\Data\AcceptInvitationData;
 use App\Enums\InvitationStatus;
 use App\Models\Invitation;
@@ -11,24 +13,53 @@ use Illuminate\Support\Facades\DB;
 
 class AcceptInvitationAction
 {
-    public function execute(User $user, AcceptInvitationData $acceptInvitationData)
+    public function execute(?User $user, AcceptInvitationData $acceptInvitationData)
     {
         $invitation = Invitation::where('token', $acceptInvitationData->token)
-                ->firstOrFail();
+            ->firstOrFail();
+            
+        if ($user) {
+            if ($invitation->email !== $user->email) {
+                throw new \Exception(__('This invitation is for another email'));
+            }
 
+            $this->completeJoinProccess($invitation, $user);
+
+            return [
+                'status' => 'success',
+                'invitation' => $invitation,
+            ];
+        }
+        
+        $existingUser = User::where('email', $invitation->email)->first();
+
+        if ($existingUser) {
+            return [
+                'status'  => 'login_required',
+                'invitation' => $invitation
+            ];
+        }
+
+        return [
+            'status'  => 'register_required',
+            'invitation' => $invitation
+        ];
+    }
+
+    private function completeJoinProccess(Invitation $invitation, User $user)
+    {
         $projectManagerForProject = ProjectUser::where('project_id', $invitation->project_id)
             ->where('role', 'project_manager')
-            ->with('user')
             ->first();
 
         $project = Project::find($invitation->project_id);
 
-        return DB::transaction(function() use ($user, $invitation, $projectManagerForProject, $project){
-            
+        return DB::transaction(function () use ($user, $invitation, $projectManagerForProject, $project) {
+
             $invitation->update([
                 'status' => InvitationStatus::ACCEPTED,
             ]);
-            
+
             setPermissionsTeamId($invitation->project_id);
 
             $user->assignRole($invitation->role);
@@ -41,10 +72,9 @@ class AcceptInvitationAction
 
 
             if ($projectManagerForProject && $project) {
-                $projectManagerForProject->notify(new MemberJoinedProjectNotification($user, $project, $invitation->role));
+                $projectManager = User::find($projectManagerForProject->user_id);
+                $projectManager->notify(new MemberJoinedProjectNotification($user, $project, $invitation->role));
             }
-
-            return $invitation;
         });
     }
 }

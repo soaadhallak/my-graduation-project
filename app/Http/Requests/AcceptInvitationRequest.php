@@ -25,7 +25,7 @@ class AcceptInvitationRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'token'=>['required','string','max:255',new TeamInvitationAcceptRule(Auth::user())]
+            'token' => ['required', 'string', 'max:255', new TeamInvitationAcceptRule(Auth::user())]
         ];
     }
 }

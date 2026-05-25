@@ -2,6 +2,7 @@
 
 namespace App\Actions;
 
+use App\Data\AcceptInvitationData;
 use App\Data\UserData;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
@@ -10,7 +11,7 @@ use Illuminate\Validation\ValidationException;
 class LoginUserAction
 {
 
-    public function execute(UserData $userData): array
+    public function execute(UserData $userData, AcceptInvitationAction $acceptInvitationAction): array
     {
         $user = User::where('email', $userData->email)->first();
 
@@ -20,8 +21,12 @@ class LoginUserAction
             ]);
         }
 
+        if ($userData->token) {
+            $acceptInvitationAction->execute($user, AcceptInvitationData::from(['token' => $userData->token]));
+        }
+
         $token = $user->createToken('user-token')->plainTextToken;
-        
+
         return [
             'user' => $user,
             'token' => $token

@@ -16,16 +16,16 @@
 </head>
 <body style="font-family: sans-serif; line-height: 1.6; color: #333;">
     <div style="max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eee;">
-        <div style="text-align: right; color: #777;">Forgot Password</div>
+        <div style="text-align: right; color: #777;">BugFlow Invitation</div>
         <hr>
         <h2>Hello ,</h2>
-        <p>You are receiving this email because we received a password reset request for your account.</p>
+        <p>You have been invited to join {{ $projectName }} with the role of {{ $role }}.</p>
 
         <div style="margin: 30px 0; text-align: center;">
-            <a href="{{ $url }}" class="button" style="color: white;">Reset Password</a>
+            <a href="{{ $url }}" class="button" style="color: white;">Accept Invitation</a>
         </div>
 
-        <p>If you did not request a password reset, no further action is required.</p>
+        <p>If you did not request this invitation, no further action is required.</p>
         <p>Sincerely,<br><strong>BugFlow Support</strong></p>
 
         <div class="footer">

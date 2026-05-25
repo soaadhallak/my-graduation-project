@@ -26,5 +26,6 @@ class UserData extends Data
         #[Max(255), Min(8), Confirmed]
         public ?string $password,
         public UploadedFile|Optional|null $avatar,
+        public ?string $token
     ) {}
 }

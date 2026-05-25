@@ -21,7 +21,7 @@ class MemberInvited
     public function __construct(
         public Invitation $invitation,
         public string $projectName,
-        public string $inviterName
+        public string $role
     )
     {
         //

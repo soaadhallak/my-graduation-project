@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\API\Auth\GithubProjectController;
 use App\Http\Controllers\API\InvitationController;
 use App\Http\Controllers\Api\ProjectController;
-
+use App\Http\Middleware\GuestOrAuthenticated;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -29,4 +29,4 @@ Route::post('github/repositories', [GithubProjectController::class, 'getReposito
 Route::post('github/initialize-project', [GithubProjectController::class, 'initializeProject'])->middleware('auth:sanctum');
 
 Route::post('invitations/{project}/invite', [InvitationController::class, 'inviteMember'])->middleware(['auth:sanctum']);
-Route::post('invitations/accept', [InvitationController::class, 'acceptInvitation'])->middleware('auth:sanctum');
+Route::post('invitations/accept', [InvitationController::class, 'acceptInvitation'])->middleware(GuestOrAuthenticated::class);

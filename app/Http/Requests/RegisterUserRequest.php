@@ -28,6 +28,7 @@ class RegisterUserRequest extends FormRequest
             'email' => ['required', 'email', 'unique:users,email'],
             'password' => ['required', Rules\Password::default()],
             'avatar' => ['nullable', 'image', 'mimes:jpeg,png,jpg', 'max:2048'],
+            'token' => ['nullable', 'string']
         ];
     }
 }

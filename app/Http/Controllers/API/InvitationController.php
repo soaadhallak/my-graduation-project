@@ -14,6 +14,7 @@ use App\Models\Project;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Mrmarchone\LaravelAutoCrud\Enums\ResponseMessages;
 
 class InvitationController extends Controller
@@ -22,20 +23,36 @@ class InvitationController extends Controller
     {
         $invitations = $inviteMemberAction->execute(InviteMemberData::from($request->validated()), $project);
 
-        return InvitationResource::make($invitations->load(['project', 'user']))
+        return InvitationResource::make($invitations->load(['project']))
             ->additional([
-                'message'=>ResponseMessages::CREATED->message()
+                'message' => ResponseMessages::CREATED->message()
             ])->response()
             ->setStatusCode(Response::HTTP_CREATED);
     }
 
-    public function acceptInvitation(AcceptInvitationRequest $request, AcceptInvitationAction $acceptInvitationAction) 
+    public function acceptInvitation(AcceptInvitationRequest $request, AcceptInvitationAction $acceptInvitationAction)
     {
-        $invitation=$acceptInvitationAction->execute(Auth::user(), AcceptInvitationData::from($request->validated()));
+        $result = $acceptInvitationAction->execute(Auth::user(), AcceptInvitationData::from($request->validated()));
 
-        return InvitationResource::make($invitation->load(['user']))
+        if ($result['status'] === 'login_required') {
+            return InvitationResource::make($result['invitation']->load(['user']))
+                ->additional([
+                    'message' => ResponseMessages::RETRIEVED->message(),
+                    'status' => 'login_required'
+                ]);
+        }
+
+        if ($result['status'] === 'register_required') {
+            return InvitationResource::make($result['invitation']->load(['user']))
+                ->additional([
+                    'message' => ResponseMessages::RETRIEVED->message(),
+                    'status' => 'register_required'
+                ]);
+        }
+        return InvitationResource::make($result['invitation']->load(['user']))
             ->additional([
-                'message'=>ResponseMessages::RETRIEVED->message()
+                'message' => ResponseMessages::RETRIEVED->message(),
+                'status' => 'success'
             ]);
     }
 }

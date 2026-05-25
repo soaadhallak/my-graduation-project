@@ -24,6 +24,6 @@ class SendInvitationMail
     public function handle(MemberInvited $event): void
     {
         Mail::to($event->invitation->email)
-        ->send(new InvitationMail($event->invitation, $event->projectName, $event->inviterName));
+        ->send(new InvitationMail($event->invitation, $event->projectName, $event->role));
     }
 }

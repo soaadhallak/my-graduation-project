@@ -6,12 +6,13 @@ use App\Models\Invitation;
 use App\Models\User;
 use Closure;
 use Illuminate\Contracts\Validation\ValidationRule;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Translation\PotentiallyTranslatedString;
 
 class TeamInvitationAcceptRule implements ValidationRule
 {
     public function __construct(
-        protected User $user
+        protected ?User $user
     )
     {
     }
@@ -30,13 +31,13 @@ class TeamInvitationAcceptRule implements ValidationRule
             return;
         }
 
-        if($invitation->expires_at->isPast()) {
-            $fail(__('This invitation has expired'));
+        if($invitation->status !== 'pending') {
+            $fail(__('This invitation has already been accepted or declined'));
             return;
         }
 
-        if($invitation->email !== $this->user->email) {
-            $fail(__('This invitation is for another email'));
+        if($invitation->expires_at->isPast()) {
+            $fail(__('This invitation has expired'));
             return;
         }
 

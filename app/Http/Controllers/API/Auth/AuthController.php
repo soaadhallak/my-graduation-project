@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\Auth;
 
+use App\Actions\AcceptInvitationAction;
 use App\Http\Controllers\Controller;
 use App\Actions\RegisterNewUserAction;
 use App\Data\UserData;
@@ -18,7 +19,7 @@ class AuthController extends Controller
 {
     public function register(RegisterUserRequest $request, RegisterNewUserAction $action): JsonResponse
     {
-        $data = $action->execute(UserData::from($request->validated()));
+        $data = $action->execute(UserData::from($request->validated()), new AcceptInvitationAction());
         $user = $data['user'];
 
         return UserResource::make($user->load(['media']))
@@ -31,7 +32,7 @@ class AuthController extends Controller
 
     public function login(LoginUserRequest $request, LoginUserAction $loginUserAction): UserResource
     {
-        $result = $loginUserAction->execute(UserData::from($request->validated()));
+        $result = $loginUserAction->execute(UserData::from($request->validated()), new AcceptInvitationAction());
         $user = $result['user'];
         $token = $result['token'];
 

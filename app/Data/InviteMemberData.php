@@ -12,8 +12,7 @@ class InviteMemberData extends Data
     protected static string $model = Invitation::class;
 
     public function __construct(
-        public string $email,
-        public string $role,
-        public int $projectId
+        public ?string $email,
+        public ?string $role,
     ) {}
 }
