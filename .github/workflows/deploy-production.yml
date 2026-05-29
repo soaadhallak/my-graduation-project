@@ -1,0 +1,34 @@
+name: Deploy to Production
+
+on:
+  push:
+    branches: [main]
+
+env:
+  NODE_ENV: production
+  APP_ENV: production
+  APP_DEBUG: "false"
+  COMPOSER_NO_INTERACTION: "1"
+
+jobs:
+  deploy_production:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup SSH
+        run: |
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+          ssh-keyscan -H -p ${{ secrets.SSH_PORT }} ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
+          chmod 644 ~/.ssh/known_hosts
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+
+      - name: Deploy to EC2
+        run: |
+          echo "Starting deployment to ${{ secrets.EC2_HOST }}..."
+          cat deploy.sh | ssh -i ~/.ssh/deploy_key -p ${{ secrets.SSH_PORT }} -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.EC2_HOST }} "DEPLOY_PATH=${{ secrets.DEPLOY_PATH }} bash -s"
+          echo "Deployment finished successfully!"
