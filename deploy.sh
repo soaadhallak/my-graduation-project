@@ -10,6 +10,7 @@ echo "=== Deployment started at $(date) ==="
 echo "Pulling latest code..."
 cd "$DEPLOY_DIR"
 export GIT_SSH_COMMAND="ssh -i ~/.ssh/github_deploy -o IdentitiesOnly=yes -o StrictHostKeyChecking=no"
+git restore .
 git pull origin main
 
 # Install PHP dependencies
