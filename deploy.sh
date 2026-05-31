@@ -20,6 +20,10 @@ composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist
 echo "Running migrations..."
 php artisan migrate
 
+# Run database seeders
+echo "Running database seeders..."
+php artisan db:seed
+
 # Clear and cache configurations
 echo "Optimizing application..."
 php artisan config:cache
