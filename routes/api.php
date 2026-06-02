@@ -24,6 +24,7 @@ Route::prefix('auth')->group(function(){
 Route::apiResource('projects', ProjectController::class)->middleware(['auth:sanctum']);
 Route::post('github/repositories', [GithubProjectController::class, 'getRepositories'])->middleware('auth:sanctum');
 Route::post('github/initialize-project', [GithubProjectController::class, 'initializeProject'])->middleware('auth:sanctum');
+Route::get('github/install-link', [GithubProjectController::class, 'getInstallLink'])->middleware('auth:sanctum');
 
 Route::post('invitations/{project}/invite', [InvitationController::class, 'inviteMember'])->middleware(['auth:sanctum']);
 Route::post('invitations/accept', [InvitationController::class, 'acceptInvitation'])->middleware(GuestOrAuthenticated::class);

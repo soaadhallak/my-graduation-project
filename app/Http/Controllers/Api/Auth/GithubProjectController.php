@@ -63,4 +63,19 @@ class GithubProjectController extends Controller
             return response()->json(['error' => 'Failed to initialize project', 'message' => $e->getMessage()], 500);
         }
     }
+
+    public function getInstallLink(): JsonResponse
+    {
+        $url = config('services.github.app_url') || 'https://github.com/apps/bugflowapp';
+
+        if (!$url) {
+            return response()->json([
+                'error' => 'GitHub App URL is not configured'
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+
+        return response()->json([
+            'url' => $url  
+        ]);
+    }
 }
