@@ -28,7 +28,7 @@ class ProjectController extends Controller
             $query->where('user_id', Auth::id());
         })->latest()->get();
 
-        return ProjectResource::collection($projects)
+        return ProjectResource::collection($projects->load(['members']))
             ->additional([
                 'message' => ResponseMessages::RETRIEVED->message()
             ]);          
@@ -39,7 +39,7 @@ class ProjectController extends Controller
     {
         $project = $this->projectService->store(ProjectData::from($request->validated()), Auth::user());
 
-        return ProjectResource::make($project)
+        return ProjectResource::make($project->load(['members']))
             ->additional([
                 'message' => ResponseMessages::CREATED->message()
             ])
@@ -51,7 +51,7 @@ class ProjectController extends Controller
     {
         Gate::authorize('view', $project);
 
-        return ProjectResource::make($project)
+        return ProjectResource::make($project->load(['members']))
             ->additional([
                 'message' => ResponseMessages::RETRIEVED->message()
             ]);
@@ -64,7 +64,7 @@ class ProjectController extends Controller
 
         $project = $this->projectService->update(ProjectData::from($request->validated()), $project);
 
-        return ProjectResource::make($project)
+        return ProjectResource::make($project->load(['members']))
             ->additional([
                 'message' => ResponseMessages::UPDATED->message()
             ]);
