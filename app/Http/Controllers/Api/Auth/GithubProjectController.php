@@ -66,7 +66,7 @@ class GithubProjectController extends Controller
 
     public function getInstallLink(): JsonResponse
     {
-        $url = config('services.github.app_url') || 'https://github.com/apps/bugflowapp';
+        $url = config('services.github.app_url')? config('services.github.app_url') : 'https://github.com/apps/bugflowapp';
 
         if (!$url) {
             return response()->json([
