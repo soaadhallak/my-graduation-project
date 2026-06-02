@@ -1,12 +1,11 @@
 <?php
 
-use App\Http\Controllers\API\Auth\AuthController;
+use App\Http\Controllers\Api\Auth\AuthController;
 use App\Http\Controllers\Api\Auth\PasswordResetController;
-use App\Http\Controllers\Api\Auth\SocialAuthController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\API\Auth\GithubProjectController;
-use App\Http\Controllers\API\InvitationController;
+use App\Http\Controllers\Api\Auth\GithubProjectController;
+use App\Http\Controllers\Api\InvitationController;
 use App\Http\Controllers\Api\ProjectController;
 use App\Http\Middleware\GuestOrAuthenticated;
 
@@ -21,8 +20,6 @@ Route::prefix('auth')->group(function(){
     Route::post('/forgot-password', [PasswordResetController::class, 'sendResetLink']);
     Route::post('/reset-password', [PasswordResetController::class, 'ResetPssword']);
 });
-
-Route::apiResource('/users', App\Http\Controllers\API\UserController::class);
 
 Route::apiResource('projects', ProjectController::class)->middleware(['auth:sanctum']);
 Route::post('github/repositories', [GithubProjectController::class, 'getRepositories'])->middleware('auth:sanctum');
