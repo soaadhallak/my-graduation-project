@@ -28,6 +28,12 @@ class Project extends Model
     {
         return $this->belongsToMany(User::class, 'project_users')
             ->using(ProjectUser::class)
+            ->withPivot('role')
             ->withTimestamps();
+    }
+
+    public function bugs(): HasMany
+    {
+        return $this->hasMany(Bug::class);
     }
 }
