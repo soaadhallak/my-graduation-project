@@ -2,6 +2,7 @@
 
 namespace App\Rules;
 
+use App\Enums\InvitationStatus;
 use App\Models\Invitation;
 use App\Models\User;
 use Closure;
@@ -31,7 +32,7 @@ class TeamInvitationAcceptRule implements ValidationRule
             return;
         }
 
-        if($invitation->status != 'pending') {
+        if($invitation->status !== InvitationStatus::PENDING) {
             $fail(__('This invitation has already been accepted or declined. Current status: :status', [
             'status' => $invitation->status
         ]));
