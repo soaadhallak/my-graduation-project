@@ -32,7 +32,7 @@ class TeamInvitationAcceptRule implements ValidationRule
         }
 
         if($invitation->status !== 'pending') {
-            $fail("This invitation has already been accepted or declined {$invitation->status}".$invitation->status);
+            $fail(__("This invitation has already been accepted or declined") . " ({$invitation->status})");
             return;
         }
 
