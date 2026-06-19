@@ -2,14 +2,16 @@
 
 namespace App\Enums;
 
-enum UserRole:string
+enum BugPriorities: string
 {
-    case PROJECT_MANAGER='project_manager';
-    case DEVELOPER='developer';
-    case TESTER='tester';
+    case URGENT = 'urgent';
+    case HIGH = 'high';
+    case MEDIUM = 'medium';
+    case LOW = 'low';
 
     public static function values(): array
     {
         return array_column(self::cases(), 'value');
     }
 }
+

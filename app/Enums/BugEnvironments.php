@@ -2,11 +2,11 @@
 
 namespace App\Enums;
 
-enum UserRole:string
+enum BugEnvironments: string
 {
-    case PROJECT_MANAGER='project_manager';
-    case DEVELOPER='developer';
-    case TESTER='tester';
+    case LOCAL      = 'local';
+    case STAGING    = 'staging';
+    case PRODUCTION = 'production';
 
     public static function values(): array
     {

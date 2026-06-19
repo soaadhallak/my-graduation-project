@@ -8,6 +8,9 @@ use App\Http\Controllers\Api\Auth\GithubProjectController;
 use App\Http\Controllers\Api\InvitationController;
 use App\Http\Controllers\Api\ProjectController;
 use App\Http\Middleware\GuestOrAuthenticated;
+use App\Http\Controllers\Api\BugController;
+use App\Http\Controllers\Api\BugSubmissionController;
+use App\Http\Controllers\Api\BugUserController;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -28,3 +31,13 @@ Route::get('github/install-link', [GithubProjectController::class, 'getInstallLi
 
 Route::post('invitations/{project}/invite', [InvitationController::class, 'inviteMember'])->middleware(['auth:sanctum']);
 Route::post('invitations/accept', [InvitationController::class, 'acceptInvitation'])->middleware(GuestOrAuthenticated::class);
+
+Route::apiResource('bugs', BugController::class)->middleware(['auth:sanctum'])->except(['index']);
+Route::get('projects/{project}/bugs', [BugController::class, 'index'])->middleware(['auth:sanctum']);
+
+Route::apiResource('my-bugs', BugUserController::class)->middleware(['auth:sanctum']);
+
+Route::middleware('auth:sanctum')->group(function () {
+    Route::post('/submissions', [BugSubmissionController::class, 'submit']);
+    Route::get('/submissions/{submission}', [BugSubmissionController::class, 'show']);
+});
