@@ -25,9 +25,7 @@ class UpdateBugRequest extends FormRequest
         $this->strategy = new BugUpdateStrategy($user, $bug);
         $allowedFields = $this->strategy->getAllowedFields();
         Log::info('Allowed fields for user ID ' . $user->id . ' on bug ID ' . $bug->id . ': ' . json_encode($allowedFields));
-        if (empty($allowedFields)) {
-            return false;
-        }
+
 
         $inputKeys = array_keys($this->except(['_method']));
         $unauthorizedFields = array_diff($inputKeys, $allowedFields);
@@ -68,6 +66,12 @@ class UpdateBugRequest extends FormRequest
                 if (in_array($bug->status->value, $movableStatuses)) {
                     $this->merge([
                         'status' => BugStatuses::OPEN->value,
+                    ]);
+                }
+
+                if ($bug->status->value === BugStatuses::CHANGES_REQUESTED->value) {
+                    $this->merge([
+                        'status' => BugStatuses::REOPENED->value,
                     ]);
                 }
             }
