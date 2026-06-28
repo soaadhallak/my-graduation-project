@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Enums;
 
 enum BugStatuses: string
@@ -9,7 +10,7 @@ enum BugStatuses: string
     case IN_REVIEW     = 'in_review';
     case READY_FOR_QA  = 'ready_for_qa';
     case CLOSED        = 'closed';
-    case REJECTED      = 'rejected';
+    case CHANGES_REQUESTED = 'changes_requested';
     case REOPENED      = 'reopened';
 
     public static function values(): array
