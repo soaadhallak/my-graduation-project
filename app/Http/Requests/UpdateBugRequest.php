@@ -26,7 +26,9 @@ class UpdateBugRequest extends FormRequest
         $this->strategy = new BugUpdateStrategy($user, $bug);
         $allowedFields = $this->strategy->getAllowedFields();
         Log::info('Allowed fields for user ID ' . $user->id . ' on bug ID ' . $bug->id . ': ' . json_encode($allowedFields));
-
+        if (empty($allowedFields)) {
+            return false;
+        }
 
         $inputKeys = array_keys($this->except(['_method']));
         $unauthorizedFields = array_diff($inputKeys, $allowedFields);
