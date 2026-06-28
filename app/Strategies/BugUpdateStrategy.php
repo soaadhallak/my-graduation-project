@@ -39,7 +39,7 @@ class BugUpdateStrategy
             $this->allowedFields = array_merge($this->allowedFields, ['assignedTo', 'status']);
         } 
         
-        if ($user->id === $bug->creator_id) {
+        if ($user->id == $bug->creator_id) {
             $this->allowedFields = array_merge($this->allowedFields, ['title', 'description', 'priority', 'environment', 'labels', 'screenshot']);
         }
 
