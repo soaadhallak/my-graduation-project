@@ -7,6 +7,7 @@ use App\Enums\UserRole;
 use App\Strategies\BugUpdateStrategy;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Override;
 
@@ -20,7 +21,7 @@ class UpdateBugRequest extends FormRequest
     public function authorize(): bool
     {
         $bug = $this->route('bug');
-        $user = auth()->user();
+        $user = Auth::user();
 
         $this->strategy = new BugUpdateStrategy($user, $bug);
         $allowedFields = $this->strategy->getAllowedFields();
