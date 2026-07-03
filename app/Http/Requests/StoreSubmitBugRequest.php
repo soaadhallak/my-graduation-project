@@ -23,9 +23,7 @@ class StoreSubmitBugRequest extends FormRequest
      * Determine if the user is authorized to make this request.
      */
     public function authorize(): bool
-    {
-        $bug = $this->input('bug');
-       
+    {  
         return auth()->user()->id === $this->bug->assigned_to && auth()->user()->isMemberOfProject($this->bug->project_id);
     }
 
@@ -39,6 +37,7 @@ class StoreSubmitBugRequest extends FormRequest
         return [
             'bugId' => ['required', 'integer', 'exists:bugs,id', new BugStatusMatchesRule($this->bug, 'in_progress')],
             'commitHash' => ['required', 'string', 'max:255'],
+            'reviewBranch' => ['required', 'string', 'max:255'],
             'changes' => ['required', 'array', 'min:1'],
             'changes.*.file' => ['required', 'string', 'max:255'],
             'changes.*.diff' => ['required', 'string'],

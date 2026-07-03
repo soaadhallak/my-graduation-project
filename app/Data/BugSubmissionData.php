@@ -21,5 +21,6 @@ class BugSubmissionData extends Data
         #[Max(255)]
         public ?string $commitHash,
         public ?array $changes,
+        public ?string $reviewBranch,
     ) {}
 }

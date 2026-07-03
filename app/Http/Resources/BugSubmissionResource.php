@@ -17,10 +17,11 @@ class BugSubmissionResource extends JsonResource
         return [
             'id' => $this->id,
             'bug' => BugResource::make($this->whenLoaded('bug')),
-            'user' => UserResource::make($this->whenLoaded('user')),
+            'submittedBy' => UserResource::make($this->whenLoaded('user')),
             'commitHash' => $this->commit_hash,
             'submittedAt' => $this->created_at->toDateTimeString(),
             'changes' => BugSubmissionChangeResource::collection($this->whenLoaded('changes')),
+            'pullRequestNumber' => $this->pull_request_number
         ];
     }
 }

@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Mrmarchone\LaravelAutoCrud\Traits\HasMediaConversions;
 use Spatie\MediaLibrary\HasMedia;
 
@@ -66,5 +67,12 @@ class Bug extends Model implements HasMedia
     public function submissions(): HasMany
     {
         return $this->hasMany(BugSubmission::class);
+    }
+
+    public function latestTestFailure(): HasOne
+    {
+        return $this->hasOne(BugHistory::class)
+                    ->where('to_state', BugStatuses::CHANGES_REQUESTED->value)
+                    ->latestOfMany(); 
     }
 }

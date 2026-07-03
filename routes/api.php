@@ -33,6 +33,9 @@ Route::post('invitations/{project}/invite', [InvitationController::class, 'invit
 Route::post('invitations/accept', [InvitationController::class, 'acceptInvitation'])->middleware(GuestOrAuthenticated::class);
 
 Route::apiResource('bugs', BugController::class)->middleware(['auth:sanctum'])->except(['index']);
+Route::post('/bugs/{bug}/test-pass', [BugController::class, 'passBug'])->middleware(['auth:sanctum']);
+Route::post('/bugs/{bug}/test-fail', [BugController::class, 'failBug'])->middleware(['auth:sanctum']);
+
 Route::get('projects/{project}/bugs', [BugController::class, 'index'])->middleware(['auth:sanctum']);
 
 Route::apiResource('my-bugs', BugUserController::class)->middleware(['auth:sanctum']);
@@ -40,4 +43,6 @@ Route::apiResource('my-bugs', BugUserController::class)->middleware(['auth:sanct
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/submissions', [BugSubmissionController::class, 'submit']);
     Route::get('/submissions/{submission}', [BugSubmissionController::class, 'show']);
+    Route::post('/submissions/{submission}/approve', [BugSubmissionController::class, 'approve']);
+    Route::post('/submissions/{submission}/reject', [BugSubmissionController::class, 'reject']);
 });

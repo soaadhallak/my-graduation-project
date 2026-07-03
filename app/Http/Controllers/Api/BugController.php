@@ -2,9 +2,13 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Actions\FailBugTestAction;
+use App\Actions\PassBugTestAction;
 use App\Data\BugData;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\BugFilterRequest;
+use App\Http\Requests\FailBugTestRequest;
+use App\Http\Requests\PassBugTestRequest;
 use App\Http\Requests\StoreBugRequest;
 use App\Http\Requests\UpdateBugRequest;
 use App\Http\Resources\BugResource;
@@ -25,9 +29,7 @@ class BugController extends Controller
 
     public function __construct(
         protected BugService $bugService
-    )
-    {
-    }
+    ) {}
     /**
      * Display a listing of the resource.
      */
@@ -44,7 +46,7 @@ class BugController extends Controller
         return BugResource::collection($bugs)
             ->additional([
                 'message' => ResponseMessages::RETRIEVED->message()
-            ]);    
+            ]);
     }
 
     /**
@@ -69,11 +71,13 @@ class BugController extends Controller
     {
         Gate::authorize('view', $bug);
 
-        return BugResource::make($bug->load([
-            'creator',
-            'assignedUser',
-            'labels',
-            'histories.user'])
+        return BugResource::make(
+            $bug->load([
+                'creator',
+                'assignedUser',
+                'labels',
+                'histories.user'
+            ])
         )->additional([
             'message' => ResponseMessages::RETRIEVED->message()
         ]);
@@ -100,5 +104,35 @@ class BugController extends Controller
     public function destroy(string $id)
     {
         //
+    }
+
+    public function passBug(Bug $bug, PassBugTestAction $passBugTestAction, PassBugTestRequest $request)
+    {
+        try {
+            $bug = $passBugTestAction->execute($bug, auth()->user());
+
+            return BugResource::make($bug)
+                ->additional([
+                    'message' => ResponseMessages::UPDATED->message()
+                ]);
+        } catch (\Throwable $e) {
+            report($e);
+            return response()->json(['success' => false, 'message' => 'An error occurred during verification.'], 500);
+        }
+    }
+
+    public function failBug(FailBugTestRequest $request, Bug $bug, FailBugTestAction $failBugTestAction)
+    {
+        try {
+            $bug = $failBugTestAction->execute($bug, $request->validated()['reason'], auth()->user());
+
+            return BugResource::make($bug)
+                ->additional([
+                    'message' => ResponseMessages::UPDATED->value
+                ]);
+        } catch (\Throwable $e) {
+            report($e);
+            return response()->json(['success' => false, 'message' => 'An error occurred while reporting test failure.'], 500);
+        }
     }
 }

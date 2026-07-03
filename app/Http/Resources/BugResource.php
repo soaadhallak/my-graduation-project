@@ -30,6 +30,10 @@ class BugResource extends JsonResource
 
                 return $media ? MediaResource::make($media): null;
             }),
+            'testFailureReason' => $this->whenLoaded(
+                'latestTestFailure', 
+                $this->latestTestFailure?->notes
+            ),
             'createdAt' => $this->created_at?->diffForHumans(),
         ];
     }
