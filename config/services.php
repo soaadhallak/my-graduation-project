@@ -42,4 +42,8 @@ return [
         'app_url' => env('GITHUB_APP_PUBLIC_URL'),
     ],
 
+    'firebase' => [
+    'credentials' => storage_path('app/firebase/service-account.json'),
+],
+
 ];
