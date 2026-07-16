@@ -57,7 +57,7 @@ class User extends Authenticatable implements HasMedia
     {
         return $this->belongsToMany(Project::class, 'project_users')
             ->using(ProjectUser::class)
-            ->wherePivot('role')
+            ->withPivot('role')
             ->withTimestamps();
     }
 

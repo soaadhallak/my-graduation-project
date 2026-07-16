@@ -10,6 +10,7 @@ use App\Actions\Projects\DeleteProjectAction;
 use App\Data\ProjectData;
 use App\Http\Requests\StoreProjectRequest;
 use App\Http\Requests\UpdateProjectRequest;
+use App\Http\Resources\ProjectMemberResource;
 use App\Http\Resources\ProjectResource;
 use Illuminate\Support\Facades\Auth;
 use Mrmarchone\LaravelAutoCrud\Enums\ResponseMessages;
@@ -67,6 +68,17 @@ class ProjectController extends Controller
         return ProjectResource::make($project->load(['members']))
             ->additional([
                 'message' => ResponseMessages::UPDATED->message()
+            ]);
+    }
+
+
+    public function members(Project $project): AnonymousResourceCollection
+    {
+        Gate::authorize('view', $project);
+
+        return ProjectMemberResource::collection($project->members()->get())
+            ->additional([
+                'message' => ResponseMessages::RETRIEVED->message()
             ]);
     }
 
