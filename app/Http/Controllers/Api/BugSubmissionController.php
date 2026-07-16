@@ -42,7 +42,11 @@ class BugSubmissionController extends Controller
 
             return response()->json([
                 'success' => false,
-                'message' => 'An error occurred while processing the submission'
+                'message' => $e->getMessage(),
+                'exception' => get_class($e),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTrace(),
             ], 500);
         }
     }
