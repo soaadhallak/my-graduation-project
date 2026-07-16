@@ -20,7 +20,7 @@ class BugService
             $bug = Bug::create([
                 'title' => $data->title,
                 'description' => $data->description,
-                'status' => BugStatuses::BACKLOG->value,
+                'status' => $data->status ?? BugStatuses::BACKLOG->value,
                 'priority' => $data->priority,
                 'environment' => $data->environment,
                 'project_id' => $data->projectId,

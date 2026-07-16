@@ -24,6 +24,15 @@ class StoreBugRequest extends FormRequest
         return auth()->user()->isMemberOfProject($projectId);
     }
 
+    protected function prepareForValidation(): void
+    {
+        if ($this->filled('assignedTo')) {
+            $this->merge([
+                'status' => BugStatuses::OPEN->value,
+            ]);
+        }
+    }
+
     /**
      * Get the validation rules that apply to the request.
      *
