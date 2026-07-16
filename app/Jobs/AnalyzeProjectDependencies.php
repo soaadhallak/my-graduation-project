@@ -51,7 +51,7 @@ class AnalyzeProjectDependencies implements ShouldQueue
         file_put_contents($tempFile, $response->body());
 
         $zip = new \ZipArchive;
-        if ($zip->open($tempFile) === TRUE) {
+        if ($zip->open($tempFile) == TRUE) {
             DB::beginTransaction();
             try {
                 Dependencie::where('project_id', $this->projectId)->delete();
@@ -110,7 +110,7 @@ class AnalyzeProjectDependencies implements ShouldQueue
         $results = [];
 
         foreach ($matches as $index => $group) {
-            if ($index === 0) continue; 
+            if ($index == 0) continue; 
             foreach ($group as $match) {
                 if (!empty($match)) $results[] = trim($match);
             }

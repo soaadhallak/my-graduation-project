@@ -24,7 +24,7 @@ class StoreSubmitBugRequest extends FormRequest
      */
     public function authorize(): bool
     {  
-        return auth()->user()->id === $this->bug->assigned_to && auth()->user()->isMemberOfProject($this->bug->project_id);
+        return auth()->user()->id == $this->bug->assigned_to && auth()->user()->isMemberOfProject($this->bug->project_id);
     }
 
     /**

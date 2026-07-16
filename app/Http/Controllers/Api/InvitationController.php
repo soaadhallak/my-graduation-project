@@ -34,7 +34,7 @@ class InvitationController extends Controller
     {
         $result = $acceptInvitationAction->execute(Auth::user(), AcceptInvitationData::from($request->validated()));
 
-        if ($result['status'] === 'login_required') {
+        if ($result['status'] == 'login_required') {
             return InvitationResource::make($result['invitation']->load(['user']))
                 ->additional([
                     'message' => ResponseMessages::RETRIEVED->message(),
@@ -42,7 +42,7 @@ class InvitationController extends Controller
                 ]);
         }
 
-        if ($result['status'] === 'register_required') {
+        if ($result['status'] == 'register_required') {
             return InvitationResource::make($result['invitation']->load(['user']))
                 ->additional([
                     'message' => ResponseMessages::RETRIEVED->message(),

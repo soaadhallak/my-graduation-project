@@ -20,11 +20,11 @@ class FailBugTestRequest extends FormRequest
             return false;
         }
 
-        if ($bug->status->value !== BugStatuses::READY_FOR_QA->value) {
+        if ($bug->status->value != BugStatuses::READY_FOR_QA->value) {
             return false;
         }
 
-        return auth()->user()->id === $bug->creator_id;
+        return auth()->user()->id == $bug->creator_id;
     }
 
     /**

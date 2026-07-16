@@ -33,7 +33,7 @@ class BugStatusMatchesRule implements ValidationRule
             ? $this->expectedStatus->value
             : $this->expectedStatus;
 
-        if ($currentStatus !== $expectedStatus) {
+        if ($currentStatus != $expectedStatus) {
             $fail(__('The bug status must be :expected. Current status is :current.', [
                 'expected' => $expectedStatus,
                 'current' => $currentStatus,

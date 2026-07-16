@@ -19,7 +19,7 @@ class AcceptInvitationAction
             ->firstOrFail();
             
         if ($user) {
-            if ($invitation->email !== $user->email) {
+            if ($invitation->email != $user->email) {
                 throw new \Exception(__('This invitation is for another email'));
             }
 

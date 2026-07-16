@@ -74,7 +74,7 @@ class BugSubmissionsService
 
     private function transitionBug(Bug $bug, string $originalStatus, User $user, string $target, string $notes = ''): void
     {
-        if ($originalStatus === $target) {
+        if ($originalStatus == $target) {
             return; // avoid redundant updates / duplicate history
         }
 

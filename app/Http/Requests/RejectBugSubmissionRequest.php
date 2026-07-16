@@ -23,7 +23,7 @@ class RejectBugSubmissionRequest extends FormRequest
 
         $bug = $submission->bug;
     
-        if ($bug->status->value !== BugStatuses::IN_REVIEW->value) {
+        if ($bug->status->value != BugStatuses::IN_REVIEW->value) {
             return false;
         }
 

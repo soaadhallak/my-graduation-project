@@ -75,7 +75,7 @@ class BugService
                 $bug->labels()->sync($data->labels);
             }
 
-            if ($originalStatus !== $bug->status) {
+            if ($originalStatus != $bug->status) {
                 BugHistory::create([
                     'bug_id' => $bug->id,
                     'user_id' => $user->id,
@@ -85,7 +85,7 @@ class BugService
                 ]);
             }
 
-            if ($originalAssignee !== $bug->assigned_to) {
+            if ($originalAssignee != $bug->assigned_to) {
                 BugHistory::create([
                     'bug_id' => $bug->id,
                     'user_id' => $user->id,

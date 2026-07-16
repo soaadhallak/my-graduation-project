@@ -23,7 +23,7 @@ class BugSubmissionPolicy
     public function view(User $user, BugSubmission $bugSubmission): bool
     {
         return $user->isMemberOfProject($bugSubmission->bug->project_id, UserRole::PROJECT_MANAGER->value) ||
-            $user->id === $bugSubmission->user_id;
+            $user->id == $bugSubmission->user_id;
     }
 
     /**

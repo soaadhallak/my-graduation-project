@@ -56,14 +56,14 @@ class UpdateBugRequest extends FormRequest
         $bug = $this->route('bug');
         $user = $this->user();
 
-        if ($user->id === $bug->assigned_to && $bug->status->value === BugStatuses::OPEN->value) {
+        if ($user->id == $bug->assigned_to && $bug->status->value == BugStatuses::OPEN->value) {
             $this->merge([
                 'status' => BugStatuses::IN_PROGRESS->value,
             ]);
         }
 
         if ($this->has('assignedTo') && $this->input('assignedTo') != $bug->assigned_to) {
-            if ($this->input('assignedTo') !== null) {
+            if ($this->input('assignedTo') != null) {
                 $movableStatuses = [BugStatuses::BACKLOG->value, BugStatuses::REOPENED->value];
                
                 if (in_array($bug->status->value, $movableStatuses)) {
@@ -72,14 +72,14 @@ class UpdateBugRequest extends FormRequest
                     ]);
                 }
 
-                if ($bug->status->value === BugStatuses::CHANGES_REQUESTED->value) {
+                if ($bug->status->value == BugStatuses::CHANGES_REQUESTED->value) {
                     $this->merge([
                         'status' => BugStatuses::REOPENED->value,
                     ]);
                 }
             }
 
-            if ($this->input('assignedTo') === null && $bug->status->value === BugStatuses::OPEN->value) {
+            if ($this->input('assignedTo') == null && $bug->status->value == BugStatuses::OPEN->value) {
                 $this->merge([
                     'status' => BugStatuses::BACKLOG->value,
                 ]);
