@@ -10,6 +10,7 @@ use App\Actions\Projects\DeleteProjectAction;
 use App\Data\ProjectData;
 use App\Http\Requests\StoreProjectRequest;
 use App\Http\Requests\UpdateProjectRequest;
+use App\Http\Resources\GithubConfigResource;
 use App\Http\Resources\ProjectMemberResource;
 use App\Http\Resources\ProjectResource;
 use Illuminate\Support\Facades\Auth;
@@ -77,6 +78,25 @@ class ProjectController extends Controller
         Gate::authorize('view', $project);
 
         return ProjectMemberResource::collection($project->members()->get())
+            ->additional([
+                'message' => ResponseMessages::RETRIEVED->message()
+            ]);
+    }
+
+
+    public function githubConfig(Project $project): GithubConfigResource|JsonResponse
+    {
+        Gate::authorize('view', $project);
+
+        $githubConfig = $project->githubConfig;
+
+        if (!$githubConfig) {
+            return response()->json([
+                'message' => 'This project is not linked to a GitHub repository.'
+            ], 404);
+        }
+
+        return GithubConfigResource::make($githubConfig)
             ->additional([
                 'message' => ResponseMessages::RETRIEVED->message()
             ]);

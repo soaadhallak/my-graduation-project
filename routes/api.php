@@ -26,6 +26,7 @@ Route::prefix('auth')->group(function(){
 
 Route::apiResource('projects', ProjectController::class)->middleware(['auth:sanctum']);
 Route::get('projects/{project}/members', [ProjectController::class, 'members'])->middleware(['auth:sanctum']);
+Route::get('projects/{project}/github-config', [ProjectController::class, 'githubConfig'])->middleware(['auth:sanctum']);
 Route::post('github/repositories', [GithubProjectController::class, 'getRepositories'])->middleware('auth:sanctum');
 Route::post('github/initialize-project', [GithubProjectController::class, 'initializeProject'])->middleware('auth:sanctum');
 Route::get('github/install-link', [GithubProjectController::class, 'getInstallLink'])->middleware('auth:sanctum');
