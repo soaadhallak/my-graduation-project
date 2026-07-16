@@ -45,6 +45,7 @@ class StoreBugRequest extends FormRequest
             'description' => ['required', 'string', 'max:255'],
             'priority' => ['required', Rule::in(BugPriorities::values())],
             'environment' => ['required', Rule::in(BugEnvironments::values())],
+            'status' => ['sometimes', Rule::in(BugStatuses::values())],
             'projectId' => ['required', 'exists:projects,id'],
             'assignedTo' => [
                 'nullable', 
