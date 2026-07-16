@@ -42,16 +42,26 @@ Route::get('projects/{project}/bugs', [BugController::class, 'index'])->middlewa
 
 Route::apiResource('my-bugs', BugUserController::class)->middleware(['auth:sanctum']);
 
+// TODO: راوت مؤقت لإعادة بناء كاش الكونفيغ - احذفيه بعد حل المشكلة
+Route::get('/debug/rebuild-config-cache', function () {
+    \Illuminate\Support\Facades\Artisan::call('config:cache');
+
+    return response()->json([
+        'done' => true,
+        'config_is_cached' => app()->configurationIsCached(),
+    ]);
+});
+
 // TODO: راوت تشخيص مؤقت - احذفيه بعد حل المشكلة
 Route::get('/debug/github-key', function () {
-    $envPath = env('GITHUB_PRIVATE_KEY_PATH');
-    $resolvedPath = base_path($envPath ?? '');
+    $configPath = config('services.github.private_key_path');
+    $resolvedPath = base_path($configPath ?? '');
     $keysDir = base_path('storage/app/keys');
 
     return response()->json([
         'config_is_cached' => app()->configurationIsCached(),
-        'env_GITHUB_PRIVATE_KEY_PATH' => $envPath,
-        'env_GITHUB_APP_ID' => env('GITHUB_APP_ID'),
+        'config_private_key_path' => $configPath,
+        'config_app_id' => config('services.github.app_id'),
         'resolved_path' => $resolvedPath,
         'file_exists' => is_file($resolvedPath),
         'is_readable' => is_readable($resolvedPath),

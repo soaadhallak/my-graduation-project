@@ -40,6 +40,8 @@ return [
         'client_secret' => env('GITHUB_CLIENT_SECRET'),
         'redirect' => env('GITHUB_REDIRECT_URI'),
         'app_url' => env('GITHUB_APP_PUBLIC_URL'),
+        'app_id' => env('GITHUB_APP_ID'),
+        'private_key_path' => env('GITHUB_PRIVATE_KEY_PATH'),
     ],
 
 ];

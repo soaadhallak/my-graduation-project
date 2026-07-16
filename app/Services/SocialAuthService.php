@@ -17,8 +17,8 @@ class SocialAuthService
 
     public function __construct()
     {
-        $this->appId = env('GITHUB_APP_ID');
-        $this->privateKeyPath = base_path(env('GITHUB_PRIVATE_KEY_PATH'));
+        $this->appId = config('services.github.app_id');
+        $this->privateKeyPath = base_path(config('services.github.private_key_path'));
     }
 
     private function generateJwt()
