@@ -11,6 +11,7 @@ use App\Http\Middleware\GuestOrAuthenticated;
 use App\Http\Controllers\Api\BugController;
 use App\Http\Controllers\Api\BugSubmissionController;
 use App\Http\Controllers\Api\BugUserController;
+use App\Http\Controllers\Api\LabelController;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -42,33 +43,7 @@ Route::get('projects/{project}/bugs', [BugController::class, 'index'])->middlewa
 
 Route::apiResource('my-bugs', BugUserController::class)->middleware(['auth:sanctum']);
 
-// TODO: راوت مؤقت لإعادة بناء كاش الكونفيغ - احذفيه بعد حل المشكلة
-Route::get('/debug/rebuild-config-cache', function () {
-    \Illuminate\Support\Facades\Artisan::call('config:cache');
-
-    return response()->json([
-        'done' => true,
-        'config_is_cached' => app()->configurationIsCached(),
-    ]);
-});
-
-// TODO: راوت تشخيص مؤقت - احذفيه بعد حل المشكلة
-Route::get('/debug/github-key', function () {
-    $configPath = config('services.github.private_key_path');
-    $resolvedPath = base_path($configPath ?? '');
-    $keysDir = base_path('storage/app/keys');
-
-    return response()->json([
-        'config_is_cached' => app()->configurationIsCached(),
-        'config_private_key_path' => $configPath,
-        'config_app_id' => config('services.github.app_id'),
-        'resolved_path' => $resolvedPath,
-        'file_exists' => is_file($resolvedPath),
-        'is_readable' => is_readable($resolvedPath),
-        'keys_dir_exists' => is_dir($keysDir),
-        'keys_dir_contents' => is_dir($keysDir) ? array_values(array_diff(scandir($keysDir), ['.', '..'])) : null,
-    ]);
-});
+Route::get('labels', [LabelController::class, 'index'])->middleware(['auth:sanctum']);
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/submissions', [BugSubmissionController::class, 'submit']);
