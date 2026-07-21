@@ -44,4 +44,8 @@ return [
         'private_key_path' => env('GITHUB_PRIVATE_KEY_PATH'),
     ],
 
+    'firebase' => [
+    'credentials' => storage_path('app/firebase/service-account.json'),
+],
+
 ];

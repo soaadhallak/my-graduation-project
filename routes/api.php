@@ -12,6 +12,8 @@ use App\Http\Controllers\Api\BugController;
 use App\Http\Controllers\Api\BugSubmissionController;
 use App\Http\Controllers\Api\BugUserController;
 use App\Http\Controllers\Api\LabelController;
+use App\Http\Controllers\Api\UserNotificationTokenController;
+
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -46,8 +48,14 @@ Route::apiResource('my-bugs', BugUserController::class)->middleware(['auth:sanct
 Route::get('labels', [LabelController::class, 'index'])->middleware(['auth:sanctum']);
 
 Route::middleware('auth:sanctum')->group(function () {
+
+    Route::post('/notification-token', [UserNotificationTokenController::class, 'store']);
+
     Route::post('/submissions', [BugSubmissionController::class, 'submit']);
     Route::get('/submissions/{submission}', [BugSubmissionController::class, 'show']);
     Route::post('/submissions/{submission}/approve', [BugSubmissionController::class, 'approve']);
     Route::post('/submissions/{submission}/reject', [BugSubmissionController::class, 'reject']);
 });
+
+
+ 

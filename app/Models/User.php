@@ -15,6 +15,7 @@ use Mrmarchone\LaravelAutoCrud\Traits\HasMediaConversions;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\Permission\Traits\HasRoles;
 
+
 class User extends Authenticatable implements HasMedia
 {
     use HasFactory, Notifiable, HasMediaConversions, HasApiTokens, HasRoles;
@@ -83,5 +84,12 @@ class User extends Authenticatable implements HasMedia
 
 
         return $query->exists();
+    }
+
+    public function notificationTokens(): HasMany
+    {
+
+        return $this->hasMany(UserNotificationToken::class);
+    
     }
 }
