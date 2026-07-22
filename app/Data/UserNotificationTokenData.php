@@ -9,10 +9,10 @@ use Spatie\LaravelData\Data;
 class UserNotificationTokenData extends Data
 {
     public function __construct(
-    #[Required]
-    public string $token,
+        #[Required]
+        public string $token,
 
-    #[Max(255)]
-    public ?string $device_name,
-) {}
+        #[Required, Max(255)]
+        public string $device_name,
+    ) {}
 }

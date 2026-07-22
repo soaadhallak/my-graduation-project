@@ -46,7 +46,7 @@ class MemberJoinedProjectNotification extends Notification
             'project_id' => $this->project->id,
             'project_name' => $this->project->name,
             'member_name' => $this->member->name,
-            'member_role ' => $this->role,
+            'member_role' => $this->role,
             'message'      => " {$this->member->name} joined your project ({$this->project->name}) as {$this->role}.",
         ];
     }

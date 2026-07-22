@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\UserRole;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -35,5 +36,12 @@ class Project extends Model
     public function bugs(): HasMany
     {
         return $this->hasMany(Bug::class);
+    }
+
+    public function projectManager(): ?User
+    {
+        return $this->members()
+            ->wherePivot('role', UserRole::PROJECT_MANAGER->value)
+            ->first();
     }
 }

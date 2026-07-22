@@ -13,6 +13,7 @@ use App\Http\Resources\UserResource;
 use Illuminate\Http\JsonResponse;
 use App\Actions\LoginUserAction;
 use App\Http\Requests\LoginUserRequest;
+use App\Services\NotificationTokenService;
 use Illuminate\Http\Request;
 
 class AuthController extends Controller
@@ -43,9 +44,16 @@ class AuthController extends Controller
             ]);
     }
 
-    public function logout(Request $request): UserResource
+    public function logout(Request $request, NotificationTokenService $notificationTokenService): UserResource
     {
         $user = $request->user();
+
+        $notificationTokenService->delete(
+            $user,
+            $request->input('token'),
+            $request->input('device_name')
+        );
+
         $user->currentAccessToken()->delete();
 
         return UserResource::make($user->load(['media']))

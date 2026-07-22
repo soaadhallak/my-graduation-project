@@ -15,7 +15,10 @@ use Illuminate\Support\Str;
 
 class BugSubmissionsService
 {
-    public function __construct(protected SocialAuthService $githubService) {}
+    public function __construct(
+        protected SocialAuthService $githubService,
+        protected BugPushNotificationService $bugPushNotificationService
+    ) {}
 
     public function store(BugSubmissionData $data, User $user): BugSubmission
     {
@@ -42,6 +45,8 @@ class BugSubmissionsService
             $this->persistChanges($submission, $data->changes ?? []);
 
             $this->transitionBug($bug, $originalStatus, $user, BugStatuses::IN_REVIEW->value);
+
+            $this->bugPushNotificationService->notifySubmissionCreated($bug, $user);
 
             return $submission;
         });
@@ -135,6 +140,8 @@ class BugSubmissionsService
 
             $this->transitionBug($bug, $originalStatus, $manager, BugStatuses::READY_FOR_QA->value);
 
+            $this->bugPushNotificationService->notifySubmissionApproved($submission);
+
             return $submission;
         });
     }
@@ -172,6 +179,8 @@ class BugSubmissionsService
 
 
             $this->transitionBug($bug, $originalStatus, $manager, BugStatuses::CHANGES_REQUESTED->value, $reason);
+
+            $this->bugPushNotificationService->notifySubmissionRejected($submission);
 
             return $submission;
         });

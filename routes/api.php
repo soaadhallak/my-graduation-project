@@ -48,14 +48,11 @@ Route::apiResource('my-bugs', BugUserController::class)->middleware(['auth:sanct
 Route::get('labels', [LabelController::class, 'index'])->middleware(['auth:sanctum']);
 
 Route::middleware('auth:sanctum')->group(function () {
-
-    Route::post('/notification-token', [UserNotificationTokenController::class, 'store']);
-
     Route::post('/submissions', [BugSubmissionController::class, 'submit']);
     Route::get('/submissions/{submission}', [BugSubmissionController::class, 'show']);
     Route::post('/submissions/{submission}/approve', [BugSubmissionController::class, 'approve']);
     Route::post('/submissions/{submission}/reject', [BugSubmissionController::class, 'reject']);
 });
 
-
+Route::post('/notification-token', [UserNotificationTokenController::class, 'store'])->middleware('auth:sanctum');
  
