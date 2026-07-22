@@ -2,20 +2,15 @@
 
 namespace App\Services;
 
-use App\Actions\SendFirebaseNotificationAction;
 use App\Enums\BugSubmissionStatus;
+use App\Jobs\SendFirebaseNotificationJob;
 use App\Models\Bug;
 use App\Models\BugSubmission;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
 
 class BugPushNotificationService
 {
-    public function __construct(
-        protected SendFirebaseNotificationAction $sendFirebaseNotificationAction
-    ) {}
-
     public function notifyBugCreated(Bug $bug): void
     {
         $this->afterCommit(function () use ($bug) {
@@ -182,20 +177,12 @@ class BugPushNotificationService
             return;
         }
 
-        try {
-            $this->sendFirebaseNotificationAction->execute($user, $title, $body, $type);
-        } catch (\Throwable $e) {
-            Log::error('Firebase push failed', [
-                'type' => $type,
-                'title' => $title,
-                'to' => [
-                    'id' => $user->id,
-                    'name' => $user->name,
-                    'email' => $user->email,
-                ],
-                'error' => $e->getMessage(),
-            ]);
-        }
+        SendFirebaseNotificationJob::dispatch(
+            $user->id,
+            $title,
+            $body,
+            $type
+        );
     }
 
     protected function afterCommit(callable $callback): void
