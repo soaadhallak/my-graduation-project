@@ -12,6 +12,7 @@ use App\Http\Controllers\Api\BugController;
 use App\Http\Controllers\Api\BugSubmissionController;
 use App\Http\Controllers\Api\BugUserController;
 use App\Http\Controllers\Api\LabelController;
+use App\Http\Controllers\Api\NotificationController;
 use App\Http\Controllers\Api\UserNotificationTokenController;
 
 
@@ -55,4 +56,10 @@ Route::middleware('auth:sanctum')->group(function () {
 });
 
 Route::post('/notification-token', [UserNotificationTokenController::class, 'store'])->middleware('auth:sanctum');
+
+Route::middleware(['auth:sanctum'])->prefix('notifications')->group(function () {
+    Route::get('/', [NotificationController::class, 'index']);
+    Route::patch('/read', [NotificationController::class, 'markAllAsRead']);
+    Route::patch('/{id}/read', [NotificationController::class, 'markAsRead']);
+});
  
