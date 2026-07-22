@@ -73,7 +73,13 @@ class AcceptInvitationAction
 
             if ($projectManagerForProject && $project) {
                 $projectManager = User::find($projectManagerForProject->user_id);
-                $projectManager->notify(new MemberJoinedProjectNotification($user, $project, $invitation->role));
+                $role = $invitation->role;
+
+                DB::afterCommit(function () use ($projectManager, $user, $project, $role) {
+                    $projectManager?->notify(
+                        new MemberJoinedProjectNotification($user, $project, $role)
+                    );
+                });
             }
         });
     }

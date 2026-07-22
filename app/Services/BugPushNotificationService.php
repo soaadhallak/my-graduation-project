@@ -3,10 +3,17 @@
 namespace App\Services;
 
 use App\Enums\BugSubmissionStatus;
-use App\Jobs\SendFirebaseNotificationJob;
 use App\Models\Bug;
 use App\Models\BugSubmission;
 use App\Models\User;
+use App\Notifications\BugAssignedNotification;
+use App\Notifications\BugCreatedNotification;
+use App\Notifications\BugInProgressNotification;
+use App\Notifications\BugQaFailedNotification;
+use App\Notifications\BugQaPassedNotification;
+use App\Notifications\SubmissionApprovedNotification;
+use App\Notifications\SubmissionCreatedNotification;
+use App\Notifications\SubmissionRejectedNotification;
 use Illuminate\Support\Facades\DB;
 
 class BugPushNotificationService
@@ -18,9 +25,7 @@ class BugPushNotificationService
 
             $this->notifyProjectManager(
                 $bug,
-                'bug_created',
-                'New bug reported',
-                "{$bug->creator->name} reported \"{$bug->title}\" in {$bug->project->name}.",
+                new BugCreatedNotification($bug),
                 $bug->creator_id
             );
         });
@@ -29,33 +34,22 @@ class BugPushNotificationService
     public function notifyBugAssigned(Bug $bug, int $assigneeId): void
     {
         $this->afterCommit(function () use ($bug, $assigneeId) {
-            $bug->loadMissing('project');
             $assignee = User::find($assigneeId);
 
             if (! $assignee) {
                 return;
             }
 
-            $this->notifyUser(
-                $assignee,
-                'bug_assigned',
-                'Bug assigned to you',
-                "You were assigned to \"{$bug->title}\" in {$bug->project->name}."
-            );
+            $assignee->notify(new BugAssignedNotification($bug));
         });
     }
 
     public function notifyBugInProgress(Bug $bug): void
     {
         $this->afterCommit(function () use ($bug) {
-            $bug->loadMissing(['assignedUser', 'project']);
-            $workerName = $bug->assignedUser?->name ?? 'A teammate';
-
             $this->notifyProjectManager(
                 $bug,
-                'bug_in_progress',
-                'Bug in progress',
-                "{$workerName} started working on \"{$bug->title}\" in {$bug->project->name}.",
+                new BugInProgressNotification($bug),
                 $bug->assigned_to
             );
         });
@@ -64,13 +58,9 @@ class BugPushNotificationService
     public function notifySubmissionCreated(Bug $bug, User $submitter): void
     {
         $this->afterCommit(function () use ($bug, $submitter) {
-            $bug->loadMissing('project');
-
             $this->notifyProjectManager(
                 $bug,
-                'submission_created',
-                'Bug submitted for review',
-                "{$submitter->name} submitted a fix for \"{$bug->title}\" in {$bug->project->name}.",
+                new SubmissionCreatedNotification($bug, $submitter),
                 $submitter->id
             );
         });
@@ -79,22 +69,17 @@ class BugPushNotificationService
     public function notifySubmissionApproved(BugSubmission $submission): void
     {
         $this->afterCommit(function () use ($submission) {
-            $submission->loadMissing(['user', 'bug.creator', 'bug.project']);
-            $bug = $submission->bug;
+            $submission->loadMissing(['user', 'bug.creator']);
 
-            $this->notifyUser(
-                $submission->user,
-                'submission_approved',
-                'Submission approved',
-                "Your submission for \"{$bug->title}\" was approved."
+            $submission->user?->notify(
+                new SubmissionApprovedNotification($submission, 'submitter')
             );
 
-            if ($bug->creator_id !== $submission->user_id) {
-                $this->notifyUser(
-                    $bug->creator,
-                    'submission_approved',
-                    'Submission approved',
-                    "A fix for your bug \"{$bug->title}\" was approved and is ready for QA."
+            $bug = $submission->bug;
+
+            if ($bug->creator_id !== $submission->user_id && $bug->creator) {
+                $bug->creator->notify(
+                    new SubmissionApprovedNotification($submission, 'creator')
                 );
             }
         });
@@ -103,40 +88,45 @@ class BugPushNotificationService
     public function notifySubmissionRejected(BugSubmission $submission): void
     {
         $this->afterCommit(function () use ($submission) {
-            $submission->loadMissing(['user', 'bug']);
+            $submission->loadMissing('user');
 
-            $this->notifyUser(
-                $submission->user,
-                'submission_rejected',
-                'Submission rejected',
-                "Your submission for \"{$submission->bug->title}\" was rejected."
-            );
+            $submission->user?->notify(new SubmissionRejectedNotification($submission));
         });
     }
 
     public function notifyQaPassed(Bug $bug): void
     {
         $this->afterCommit(function () use ($bug) {
-            $bug->loadMissing('project');
-            $body = "Bug \"{$bug->title}\" passed QA and was closed in {$bug->project->name}.";
-            $submitterId = $this->notifyApprovedSubmitter($bug, 'qa_passed', 'Bug closed', $body);
+            $submitterId = $this->notifyApprovedSubmitter(
+                $bug,
+                new BugQaPassedNotification($bug)
+            );
 
-            $this->notifyProjectManager($bug, 'qa_passed', 'Bug closed', $body, $submitterId);
+            $this->notifyProjectManager(
+                $bug,
+                new BugQaPassedNotification($bug),
+                $submitterId
+            );
         });
     }
 
     public function notifyQaFailed(Bug $bug): void
     {
         $this->afterCommit(function () use ($bug) {
-            $bug->loadMissing('project');
-            $body = "Bug \"{$bug->title}\" failed QA testing in {$bug->project->name}.";
-            $submitterId = $this->notifyApprovedSubmitter($bug, 'qa_failed', 'QA failed', $body);
+            $submitterId = $this->notifyApprovedSubmitter(
+                $bug,
+                new BugQaFailedNotification($bug)
+            );
 
-            $this->notifyProjectManager($bug, 'qa_failed', 'QA failed', $body, $submitterId);
+            $this->notifyProjectManager(
+                $bug,
+                new BugQaFailedNotification($bug),
+                $submitterId
+            );
         });
     }
 
-    protected function notifyApprovedSubmitter(Bug $bug, string $type, string $title, string $body): ?int
+    protected function notifyApprovedSubmitter(Bug $bug, object $notification): ?int
     {
         $submission = $bug->submissions()
             ->where('status', BugSubmissionStatus::Approved->value)
@@ -148,17 +138,14 @@ class BugPushNotificationService
         }
 
         $submission->loadMissing('user');
-
-        $this->notifyUser($submission->user, $type, $title, $body);
+        $submission->user?->notify($notification);
 
         return $submission->user_id;
     }
 
     protected function notifyProjectManager(
         Bug $bug,
-        string $type,
-        string $title,
-        string $body,
+        object $notification,
         ?int $exceptUserId = null
     ): void {
         $manager = $bug->project?->projectManager()
@@ -168,21 +155,7 @@ class BugPushNotificationService
             return;
         }
 
-        $this->notifyUser($manager, $type, $title, $body);
-    }
-
-    protected function notifyUser(?User $user, string $type, string $title, string $body): void
-    {
-        if (! $user) {
-            return;
-        }
-
-        SendFirebaseNotificationJob::dispatch(
-            $user->id,
-            $title,
-            $body,
-            $type
-        );
+        $manager->notify($notification);
     }
 
     protected function afterCommit(callable $callback): void
