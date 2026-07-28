@@ -12,6 +12,8 @@ class NotificationTokenService
     public function store(UserNotificationTokenData $data, User $user): UserNotificationToken
     {
         return DB::transaction(function () use ($data, $user) {
+            $this->detachTokenFromOtherDevices($data->token);
+
             $userNotificationToken = UserNotificationToken::updateOrCreate(
                 [
                     'user_id' => $user->id,
@@ -24,6 +26,24 @@ class NotificationTokenService
             );
 
             return $userNotificationToken;
+        });
+    }
+
+    public function update(UserNotificationTokenData $data, User $user): UserNotificationToken
+    {
+        return DB::transaction(function () use ($data, $user) {
+            $userNotificationToken = $user->notificationTokens()
+                ->where('device_name', $data->device_name)
+                ->firstOrFail();
+
+            $this->detachTokenFromOtherDevices($data->token, $userNotificationToken->id);
+
+            $userNotificationToken->update([
+                'token' => $data->token,
+                'last_used_at' => now(),
+            ]);
+
+            return $userNotificationToken->fresh();
         });
     }
 
@@ -44,5 +64,19 @@ class NotificationTokenService
         }
 
         return $query->delete();
+    }
+
+    /**
+     * FCM tokens are globally unique; remove any stale ownership before assigning.
+     */
+    protected function detachTokenFromOtherDevices(string $token, ?int $exceptId = null): void
+    {
+        $query = UserNotificationToken::where('token', $token);
+
+        if ($exceptId !== null) {
+            $query->where('id', '!=', $exceptId);
+        }
+
+        $query->delete();
     }
 }

@@ -11,6 +11,7 @@ use App\Http\Middleware\GuestOrAuthenticated;
 use App\Http\Controllers\Api\BugController;
 use App\Http\Controllers\Api\BugSubmissionController;
 use App\Http\Controllers\Api\BugUserController;
+use App\Http\Controllers\Api\DependencyController;
 use App\Http\Controllers\Api\LabelController;
 use App\Http\Controllers\Api\NotificationController;
 use App\Http\Controllers\Api\UserNotificationTokenController;
@@ -43,6 +44,8 @@ Route::post('/bugs/{bug}/test-pass', [BugController::class, 'passBug'])->middlew
 Route::post('/bugs/{bug}/test-fail', [BugController::class, 'failBug'])->middleware(['auth:sanctum']);
 
 Route::get('projects/{project}/bugs', [BugController::class, 'index'])->middleware(['auth:sanctum']);
+Route::get('projects/{project}/dependencies', [DependencyController::class, 'index'])->middleware(['auth:sanctum']);
+Route::get('projects/{project}/dependencies/impact', [DependencyController::class, 'impact'])->middleware(['auth:sanctum']);
 
 Route::apiResource('my-bugs', BugUserController::class)->middleware(['auth:sanctum']);
 
@@ -55,7 +58,10 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/submissions/{submission}/reject', [BugSubmissionController::class, 'reject']);
 });
 
-Route::post('/notification-token', [UserNotificationTokenController::class, 'store'])->middleware('auth:sanctum');
+Route::middleware('auth:sanctum')->group(function () {
+    Route::post('/notification-token', [UserNotificationTokenController::class, 'store']);
+    Route::patch('/notification-token', [UserNotificationTokenController::class, 'update']);
+});
 
 Route::middleware(['auth:sanctum'])->prefix('notifications')->group(function () {
     Route::get('/', [NotificationController::class, 'index']);

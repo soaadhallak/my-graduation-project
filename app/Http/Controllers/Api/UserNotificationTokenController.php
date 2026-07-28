@@ -4,8 +4,8 @@ namespace App\Http\Controllers\Api;
 
 use App\Data\UserNotificationTokenData;
 use App\Http\Controllers\Controller;
-use App\Http\Requests\DestroyUserNotificationTokenRequest;
 use App\Http\Requests\StoreUserNotificationTokenRequest;
+use App\Http\Requests\UpdateUserNotificationTokenRequest;
 use App\Http\Resources\UserNotificationTokenResource;
 use App\Services\NotificationTokenService;
 use Illuminate\Http\JsonResponse;
@@ -31,5 +31,18 @@ class UserNotificationTokenController extends Controller
             ])
             ->response()
             ->setStatusCode(Response::HTTP_CREATED);
+    }
+
+    public function update(UpdateUserNotificationTokenRequest $request): UserNotificationTokenResource
+    {
+        $userNotificationToken = $this->notificationTokenService->update(
+            UserNotificationTokenData::from($request->validated()),
+            $request->user()
+        );
+
+        return UserNotificationTokenResource::make($userNotificationToken)
+            ->additional([
+                'message' => ResponseMessages::UPDATED->message()
+            ]);
     }
 }
