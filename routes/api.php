@@ -29,6 +29,9 @@ Route::prefix('auth')->group(function(){
     Route::post('/reset-password', [PasswordResetController::class, 'ResetPssword']);
 });
 
+// TEMPORARY — no auth, for server testing only. Remove before production.
+Route::get('debug/projects', [ProjectController::class, 'debugDump']);
+
 Route::apiResource('projects', ProjectController::class)->middleware(['auth:sanctum']);
 Route::get('projects/{project}/members', [ProjectController::class, 'members'])->middleware(['auth:sanctum']);
 Route::get('projects/{project}/github-config', [ProjectController::class, 'githubConfig'])->middleware(['auth:sanctum']);

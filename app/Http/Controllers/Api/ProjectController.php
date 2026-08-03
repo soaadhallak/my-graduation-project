@@ -114,4 +114,21 @@ class ProjectController extends Controller
                 'message' => ResponseMessages::DELETED->message()
             ]);
     }
+
+    /**
+     * TEMPORARY — debug dump of all projects with github config + dependencies.
+     * Remove before production.
+     */
+    public function debugDump(): JsonResponse
+    {
+        $projects = Project::query()
+            ->with(['githubConfig', 'dependencies'])
+            ->latest()
+            ->get();
+
+        return response()->json([
+            'message' => 'TEMPORARY debug endpoint — remove before production',
+            'data' => $projects,
+        ]);
+    }
 }
