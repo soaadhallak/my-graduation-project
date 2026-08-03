@@ -35,14 +35,18 @@ class AnalyzeProjectDependencies implements ShouldQueue
         $project = Project::with('githubConfig')->find($this->projectId);
 
         if (! $project || ! $project->githubConfig) {
+            $this->markFailed($project, 'Project or GitHub config not found.');
+
             return;
         }
+
+        $this->markRunning($project);
 
         $config = $project->githubConfig;
         $token = $gitService->getInstallationToken($config->installation_id);
 
         if (! $token) {
-            Log::error("Failed to obtain GitHub token for Project #{$this->projectId}");
+            $this->markFailed($project, 'Failed to obtain GitHub installation token.');
 
             return;
         }
@@ -52,7 +56,10 @@ class AnalyzeProjectDependencies implements ShouldQueue
             ->get("https://github.com/{$config->full_name}/zipball/{$config->default_branch}");
 
         if (! $response->successful()) {
-            Log::error('GitHub Zipball API failed: '.$response->status());
+            $this->markFailed(
+                $project,
+                "GitHub zipball download failed (HTTP {$response->status()}) for {$config->full_name}@{$config->default_branch}."
+            );
 
             return;
         }
@@ -63,8 +70,8 @@ class AnalyzeProjectDependencies implements ShouldQueue
         $zip = new ZipArchive;
 
         if ($zip->open($tempFile) !== true) {
-            Log::error("Could not open Zip file for Project #{$this->projectId}");
             @unlink($tempFile);
+            $this->markFailed($project, 'Could not open downloaded zip archive.');
 
             return;
         }
@@ -73,10 +80,11 @@ class AnalyzeProjectDependencies implements ShouldQueue
             [$fileIndex, $composerJson] = $this->buildFileIndex($zip);
             $psr4 = $resolver->parsePsr4FromComposerJson($composerJson);
 
-            DB::transaction(function () use ($zip, $fileIndex, $psr4, $extractor, $resolver, $project) {
+            $inserted = DB::transaction(function () use ($zip, $fileIndex, $psr4, $extractor, $resolver) {
                 Dependencie::where('project_id', $this->projectId)->delete();
 
                 $rows = [];
+                $total = 0;
 
                 for ($i = 0; $i < $zip->numFiles; $i++) {
                     $entryPath = $zip->getNameIndex($i);
@@ -118,6 +126,7 @@ class AnalyzeProjectDependencies implements ShouldQueue
 
                         if (count($rows) >= 500) {
                             Dependencie::insert($rows);
+                            $total += count($rows);
                             $rows = [];
                         }
                     }
@@ -125,22 +134,68 @@ class AnalyzeProjectDependencies implements ShouldQueue
 
                 if ($rows !== []) {
                     Dependencie::insert($rows);
+                    $total += count($rows);
                 }
 
-                $project->update(['status' => 'ready']);
+                return $total;
             });
 
-            Log::info("Success: Analysis completed via Zipball for Project #{$this->projectId}");
-        } catch (\Throwable $e) {
-            Log::error('Analysis Error: '.$e->getMessage(), [
-                'project_id' => $this->projectId,
+            $project->update([
+                'analysis_status' => 'ready',
+                'analysis_error' => null,
+                'analysis_finished_at' => now(),
             ]);
+
+            Log::info("Success: Analysis completed via Zipball for Project #{$this->projectId}", [
+                'dependencies' => $inserted,
+            ]);
+        } catch (\Throwable $e) {
+            $this->markFailed($project, $e->getMessage());
+
+            throw $e;
         } finally {
             $zip->close();
             if (file_exists($tempFile)) {
                 unlink($tempFile);
             }
         }
+    }
+
+    public function failed(?\Throwable $exception): void
+    {
+        $project = Project::find($this->projectId);
+
+        if ($project && $project->analysis_status !== 'ready') {
+            $this->markFailed(
+                $project,
+                $exception?->getMessage() ?? 'Job failed after all retries.'
+            );
+        }
+    }
+
+    protected function markRunning(Project $project): void
+    {
+        $project->update([
+            'analysis_status' => 'running',
+            'analysis_error' => null,
+            'analysis_started_at' => now(),
+            'analysis_finished_at' => null,
+        ]);
+    }
+
+    protected function markFailed(?Project $project, string $message): void
+    {
+        Log::error("Analysis failed for Project #{$this->projectId}: {$message}");
+
+        if (! $project) {
+            return;
+        }
+
+        $project->update([
+            'analysis_status' => 'failed',
+            'analysis_error' => $message,
+            'analysis_finished_at' => now(),
+        ]);
     }
 
     /**

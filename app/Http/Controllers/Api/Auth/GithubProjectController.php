@@ -51,6 +51,14 @@ class GithubProjectController extends Controller
     {
         try {
             $githubConfig = $this->githubConfigService->store(GithubConfigData::from($request->validated()));
+
+            $githubConfig->project->update([
+                'analysis_status' => 'pending',
+                'analysis_error' => null,
+                'analysis_started_at' => null,
+                'analysis_finished_at' => null,
+            ]);
+
             AnalyzeProjectDependencies::dispatch($request->projectId);
 
             return GithubConfigResource::make($githubConfig->load(['project']))

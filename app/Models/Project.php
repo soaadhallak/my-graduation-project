@@ -13,7 +13,19 @@ class Project extends Model
     protected $fillable = [
         'name',
         'description',
+        'analysis_status',
+        'analysis_error',
+        'analysis_started_at',
+        'analysis_finished_at',
     ];
+
+    protected function casts(): array
+    {
+        return [
+            'analysis_started_at' => 'datetime',
+            'analysis_finished_at' => 'datetime',
+        ];
+    }
 
     public function githubConfig(): HasOne
     {
