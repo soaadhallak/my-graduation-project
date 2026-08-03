@@ -20,6 +20,8 @@ class DependencieData extends Data
         public ?string $filePath,
         #[Max(255)]
         public ?string $dependsOn,
+        #[Max(255)]
+        public ?string $dependsOnPath = null,
         public ?string $extension = null,
     ) {}
 }

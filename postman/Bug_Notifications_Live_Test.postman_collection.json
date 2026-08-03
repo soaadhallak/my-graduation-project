@@ -1,0 +1,511 @@
+{
+  "info": {
+    "_postman_id": "a7f3c2e1-9b4d-4f8a-8c1e-notifications-live",
+    "name": "Bug Notifications Live Test",
+    "description": "اختبار حي لإشعارات Firebase.\n\n## ترتيب التشغيل المقترح\n1. عبّي Environment: emails/passwords + project_id + developer_user_id + fcm_token الحقيقي من الموبايل\n2. Login لكل دور (PM / Developer / Creator)\n3. Register FCM token لنفس الجهاز على الحساب اللي بدك توصله إشعار (أو على الكل)\n4. شغّلي سيناريوهات الـ bugs بالترتيب\n\n## مين بيستلم شو؟\n| الحدث | المستلم |\n|---|---|\n| Create bug | Project Manager |\n| Assign bug | المعيَّن |\n| in_progress | Project Manager |\n| Submission | Project Manager |\n| Approve | رافع الحل + منشئ الـ bug |\n| Reject | رافع الحل |\n| QA pass/fail | رافع الحل المقبول + Project Manager |\n\nملاحظة: Submission/Approve/Reject تحتاج GitHub config شغّال للمشروع.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://my-graduation-project.test/api"
+    }
+  ],
+  "item": [
+    {
+      "name": "0. Auth",
+      "item": [
+        {
+          "name": "Login as Project Manager",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('PM login ok', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "const json = pm.response.json();",
+                  "const token = json.token || (json.data && json.data.token) || (json.meta && json.meta.token);",
+                  "if (token) {",
+                  "  pm.environment.set('pm_token', token);",
+                  "  console.log('pm_token saved');",
+                  "} else {",
+                  "  console.warn('Could not find token in response', json);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{pm_email}}\",\n  \"password\": \"{{pm_password}}\"\n}"
+            },
+            "url": "{{base_url}}/auth/login",
+            "description": "يحفظ pm_token تلقائياً من الـ response."
+          }
+        },
+        {
+          "name": "Login as Developer",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Developer login ok', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "const json = pm.response.json();",
+                  "const token = json.token || (json.data && json.data.token) || (json.meta && json.meta.token);",
+                  "if (token) {",
+                  "  pm.environment.set('developer_token', token);",
+                  "  const user = json.data || json;",
+                  "  if (user.id) pm.environment.set('developer_user_id', String(user.id));",
+                  "  console.log('developer_token saved');",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{developer_email}}\",\n  \"password\": \"{{developer_password}}\"\n}"
+            },
+            "url": "{{base_url}}/auth/login"
+          }
+        },
+        {
+          "name": "Login as Bug Creator",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Creator login ok', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "const json = pm.response.json();",
+                  "const token = json.token || (json.data && json.data.token) || (json.meta && json.meta.token);",
+                  "if (token) {",
+                  "  pm.environment.set('creator_token', token);",
+                  "  console.log('creator_token saved');",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{creator_email}}\",\n  \"password\": \"{{creator_password}}\"\n}"
+            },
+            "url": "{{base_url}}/auth/login",
+            "description": "لو منشئ الـ bug هو نفس الـ PM أو الـ Developer، استخدمي نفس الحساب ولا حاجة لدور ثالث."
+          }
+        }
+      ]
+    },
+    {
+      "name": "1. FCM Token APIs",
+      "item": [
+        {
+          "name": "Register FCM token on PM account",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Token stored for PM', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{pm_token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"token\": \"{{fcm_token}}\",\n  \"device_name\": \"{{device_name}}\"\n}"
+            },
+            "url": "{{base_url}}/notification-token",
+            "description": "بعدها أي إشعار موجه للـ PM لازم يوصل لجهازك."
+          }
+        },
+        {
+          "name": "Register FCM token on Developer account",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{developer_token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"token\": \"{{fcm_token}}\",\n  \"device_name\": \"{{device_name}}\"\n}"
+            },
+            "url": "{{base_url}}/notification-token",
+            "description": "نفس توكن الجهاز على حساب الـ developer لاختبار إشعار التعيين/الرفض/الـ QA."
+          }
+        },
+        {
+          "name": "Register FCM token on Creator account",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{creator_token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"token\": \"{{fcm_token}}\",\n  \"device_name\": \"{{device_name}}\"\n}"
+            },
+            "url": "{{base_url}}/notification-token"
+          }
+        },
+        {
+          "name": "Delete FCM token",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{pm_token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"device_name\": \"{{device_name}}\"\n}"
+            },
+            "url": "{{base_url}}/notification-token",
+            "description": "يحذف توكن الجهاز. ممكن تبعتي token بدل device_name."
+          }
+        },
+        {
+          "name": "Logout with FCM cleanup",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{pm_token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"device_name\": \"{{device_name}}\"\n}"
+            },
+            "url": "{{base_url}}/auth/logout",
+            "description": "يحذف access token + notification token إذا مرّرتِ device_name أو notification_token. بعدها لازم تعيدي Login as PM."
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. Create bug → notify PM",
+      "item": [
+        {
+          "name": "Create bug (as Creator)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Bug created', function () {",
+                  "  pm.response.to.have.status(201);",
+                  "});",
+                  "const json = pm.response.json();",
+                  "const bug = json.data || json;",
+                  "if (bug.id) {",
+                  "  pm.environment.set('bug_id', String(bug.id));",
+                  "  console.log('bug_id=' + bug.id);",
+                  "}",
+                  "console.log('Expected push: Project Manager — New bug reported');"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{creator_token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Notification test bug {{$timestamp}}\",\n  \"description\": \"Created to verify PM push notification\",\n  \"priority\": \"medium\",\n  \"environment\": \"local\",\n  \"projectId\": {{project_id}}\n}"
+            },
+            "url": "{{base_url}}/bugs",
+            "description": "المتوقع: إشعار للـ Project Manager.\nتأكدي إن FCM token مسجّل على حساب الـ PM."
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Assign bug → notify assignee",
+      "item": [
+        {
+          "name": "Assign bug to developer (as PM)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Bug assigned', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "console.log('Expected push: Developer — Bug assigned to you');"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{pm_token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"assignedTo\": {{developer_user_id}}\n}"
+            },
+            "url": "{{base_url}}/bugs/{{bug_id}}",
+            "description": "المتوقع: إشعار للمستخدم المعيَّن (developer)."
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. Start work → notify PM (in_progress)",
+      "item": [
+        {
+          "name": "Assignee touches open bug → in_progress",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Bug moved toward in_progress', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "const json = pm.response.json();",
+                  "const bug = json.data || json;",
+                  "console.log('status=', bug.status);",
+                  "console.log('Expected push: Project Manager — Bug in progress');"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{developer_token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Notification test bug in progress\"\n}"
+            },
+            "url": "{{base_url}}/bugs/{{bug_id}}",
+            "description": "لما الـ assignee يعدّل bug بحالة open، النظام يحوّله تلقائياً لـ in_progress ويبعت إشعار للـ PM."
+          }
+        }
+      ]
+    },
+    {
+      "name": "5. Submission → notify PM",
+      "item": [
+        {
+          "name": "Submit fix (as Developer)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Submission created or explained', function () {",
+                  "  // 201 expected when GitHub is configured",
+                  "  console.log(pm.response.code, pm.response.text());",
+                  "});",
+                  "const json = pm.response.json();",
+                  "const submission = json.data || json;",
+                  "if (submission && submission.id) {",
+                  "  pm.environment.set('submission_id', String(submission.id));",
+                  "}",
+                  "console.log('Expected push: Project Manager — Bug submitted for review');"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{developer_token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"bugId\": {{bug_id}},\n  \"commitHash\": \"abc123def456\",\n  \"reviewBranch\": \"fix/notification-test-{{bug_id}}\",\n  \"changes\": [\n    {\n      \"file\": \"app/Example.php\",\n      \"diff\": \"@@ -1 +1 @@\\n-old\\n+new\"\n    }\n  ]\n}"
+            },
+            "url": "{{base_url}}/submissions",
+            "description": "يحتاج: bug status = in_progress + GitHub config للمشروع + branch موجود غالباً حسب منطق SocialAuthService.\nالمتوقع عند النجاح: إشعار للـ PM."
+          }
+        }
+      ]
+    },
+    {
+      "name": "6. Approve → notify submitter + creator",
+      "item": [
+        {
+          "name": "Approve submission (as PM)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "console.log(pm.response.code, pm.response.text());",
+                  "console.log('Expected push: Developer (submitter) + Creator');"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{pm_token}}" }
+            ],
+            "url": "{{base_url}}/submissions/{{submission_id}}/approve",
+            "description": "المتوقع: إشعار لرافع الحل + منشئ الـ bug."
+          }
+        }
+      ]
+    },
+    {
+      "name": "7. Reject → notify submitter",
+      "item": [
+        {
+          "name": "Reject submission (as PM)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "console.log(pm.response.code, pm.response.text());",
+                  "console.log('Expected push: Developer (submitter) only');"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{pm_token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reason\": \"Needs more tests before merge\"\n}"
+            },
+            "url": "{{base_url}}/submissions/{{submission_id}}/reject",
+            "description": "استخدمي هذا بدل Approve إذا بدك تختبري مسار الرفض.\nالمتوقع: إشعار لرافع الحل فقط."
+          }
+        }
+      ]
+    },
+    {
+      "name": "8. QA results → notify submitter + PM",
+      "item": [
+        {
+          "name": "Test PASS (as Creator)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "console.log(pm.response.code, pm.response.text());",
+                  "console.log('Expected push: approved submitter + Project Manager');"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{creator_token}}" }
+            ],
+            "url": "{{base_url}}/bugs/{{bug_id}}/test-pass",
+            "description": "يحتاج bug status = ready_for_qa (بعد approve).\nالمتوقع: إشعار لرافع الحل المقبول + الـ PM."
+          }
+        },
+        {
+          "name": "Test FAIL (as Creator)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "console.log(pm.response.code, pm.response.text());",
+                  "console.log('Expected push: approved submitter + Project Manager');"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{creator_token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reason\": \"QA failed: reproduction still happens\"\n}"
+            },
+            "url": "{{base_url}}/bugs/{{bug_id}}/test-fail",
+            "description": "بديل لـ Test PASS. نفس المستلمين."
+          }
+        }
+      ]
+    }
+  ]
+}

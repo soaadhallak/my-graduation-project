@@ -11,6 +11,7 @@ class Dependencie extends Model
         'project_id',
         'file_path',
         'depends_on',
+        'depends_on_path',
         'extension',
     ];
 

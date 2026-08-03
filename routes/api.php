@@ -45,7 +45,7 @@ Route::post('/bugs/{bug}/test-fail', [BugController::class, 'failBug'])->middlew
 
 Route::get('projects/{project}/bugs', [BugController::class, 'index'])->middleware(['auth:sanctum']);
 Route::get('projects/{project}/dependencies', [DependencyController::class, 'index'])->middleware(['auth:sanctum']);
-Route::get('projects/{project}/dependencies/impact', [DependencyController::class, 'impact'])->middleware(['auth:sanctum']);
+Route::get('projects/{project}/dependencies/map', [DependencyController::class, 'map'])->middleware(['auth:sanctum']);
 
 Route::apiResource('my-bugs', BugUserController::class)->middleware(['auth:sanctum']);
 
