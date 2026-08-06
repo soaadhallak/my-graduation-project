@@ -17,9 +17,6 @@ git pull origin main
 echo "Installing PHP dependencies..."
 composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist --no-scripts
 
-php artisan package:discover --ansi
-php artisan optimize:clear
-
 # Run migrations
 echo "Running migrations..."
 php artisan migrate
