@@ -3,6 +3,7 @@
 namespace App\Policies;
 
 use App\Enums\UserRole;
+use App\Models\Bug;
 use App\Models\BugSubmission;
 use App\Models\User;
 use Illuminate\Auth\Access\Response;
@@ -10,11 +11,11 @@ use Illuminate\Auth\Access\Response;
 class BugSubmissionPolicy
 {
     /**
-     * Determine whether the user can view any models.
+     * Determine whether the user can view any models for a bug.
      */
-    public function viewAny(User $user): bool
+    public function viewAny(User $user, Bug $bug): bool
     {
-        return false;
+        return $user->isMemberOfProject($bug->project_id, UserRole::PROJECT_MANAGER->value);
     }
 
     /**

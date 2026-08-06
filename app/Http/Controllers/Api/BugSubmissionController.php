@@ -5,13 +5,14 @@ namespace App\Http\Controllers\Api;
 use App\Data\BugSubmissionData;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\ApproveBugSubmissionRequest;
+use App\Http\Requests\BugSubmissionFilterRequest;
 use App\Http\Requests\RejectBugSubmissionRequest;
 use App\Http\Requests\StoreSubmitBugRequest;
+use App\Enums\UserRole;
 use App\Http\Resources\BugSubmissionResource;
 use App\Models\BugSubmission;
 use App\Services\BugSubmissionsService;
-use Illuminate\Http\Request;
-use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use Mrmarchone\LaravelAutoCrud\Enums\ResponseMessages;
@@ -22,6 +23,24 @@ class BugSubmissionController extends Controller
         protected BugSubmissionsService $submissionService
     ) {}
 
+    public function index(BugSubmissionFilterRequest $request): AnonymousResourceCollection
+    {
+        $projectIds = Auth::user()
+            ->projects()
+            ->wherePivot('role', UserRole::PROJECT_MANAGER->value)
+            ->pluck('projects.id');
+
+        $submissions = BugSubmission::getQuery()
+            ->whereHas('bug', fn ($query) => $query->whereIn('project_id', $projectIds))
+            ->with(['user', 'changes', 'bug.creator', 'bug.project'])
+            ->paginate($request->input('perPage', $request->input('perPage', 15)))
+            ->withQueryString();
+
+        return BugSubmissionResource::collection($submissions)
+            ->additional([
+                'message' => ResponseMessages::RETRIEVED->message()
+            ]);
+    }
 
     public function submit(StoreSubmitBugRequest $request)
     {

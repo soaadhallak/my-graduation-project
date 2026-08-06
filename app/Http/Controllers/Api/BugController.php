@@ -12,7 +12,9 @@ use App\Http\Requests\PassBugTestRequest;
 use App\Http\Requests\StoreBugRequest;
 use App\Http\Requests\UpdateBugRequest;
 use App\Http\Resources\BugResource;
+use App\Http\Resources\BugSubmissionResource;
 use App\Models\Bug;
+use App\Models\BugSubmission;
 use App\Models\Project;
 use App\Services\BugService;
 use Illuminate\Http\Request;
@@ -134,5 +136,19 @@ class BugController extends Controller
             report($e);
             return response()->json(['success' => false, 'message' => 'An error occurred while reporting test failure.'], 500);
         }
+    }
+
+    public function submissions(Bug $bug, Request $request): AnonymousResourceCollection
+    {
+        Gate::authorize('viewAny', [BugSubmission::class, $bug]);
+
+        $submissions = $bug->submissions()
+            ->with(['user', 'changes', 'bug.creator'])
+            ->latest()->get();
+
+        return BugSubmissionResource::collection($submissions)
+            ->additional([
+                'message' => ResponseMessages::RETRIEVED->message()
+            ]);
     }
 }

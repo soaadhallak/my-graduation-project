@@ -21,7 +21,9 @@ class BugSubmissionResource extends JsonResource
             'commitHash' => $this->commit_hash,
             'submittedAt' => $this->created_at->toDateTimeString(),
             'changes' => BugSubmissionChangeResource::collection($this->whenLoaded('changes')),
-            'pullRequestNumber' => $this->pull_request_number
+            'pullRequestNumber' => $this->pull_request_number,
+            'status' => $this->status,
+            'rejectedReason' => $this->rejected_reason
         ];
     }
 }

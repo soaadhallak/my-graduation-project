@@ -3,12 +3,15 @@
 namespace App\Models;
 
 use App\Enums\BugSubmissionStatus;
+use App\Traits\BugSubmissionFilterQuery;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class BugSubmission extends Model
 {
+    use BugSubmissionFilterQuery;
+
     protected $fillable = [
         'bug_id',
         'user_id',
