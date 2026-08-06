@@ -2,6 +2,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\GithubConfig;
 use App\Models\Project;
 use App\Models\ProjectUser;
 use App\Services\ProjectService;
@@ -126,6 +127,19 @@ class ProjectController extends Controller
         }
 
         return GithubConfigResource::make($githubConfig)
+            ->additional([
+                'message' => ResponseMessages::RETRIEVED->message()
+            ]);
+    }
+
+
+    public function integrations(): AnonymousResourceCollection
+    {
+        $integrations = GithubConfig::whereHas('project.members', function ($query) {
+            $query->where('user_id', Auth::id());
+        })->with('project')->latest()->get();
+
+        return GithubConfigResource::collection($integrations)
             ->additional([
                 'message' => ResponseMessages::RETRIEVED->message()
             ]);

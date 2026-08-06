@@ -29,6 +29,7 @@ Route::prefix('auth')->group(function(){
     Route::post('/reset-password', [PasswordResetController::class, 'ResetPssword']);
 });
 
+Route::get('projects/intergrations', [ProjectController::class, 'integrations'])->middleware(['auth:sanctum']);
 Route::apiResource('projects', ProjectController::class)->middleware(['auth:sanctum']);
 Route::get('projects/{project}/members', [ProjectController::class, 'members'])->middleware(['auth:sanctum']);
 Route::patch('projects/{project}/members/{projectUser}', [ProjectController::class, 'updateMemberRole'])
@@ -37,7 +38,7 @@ Route::patch('projects/{project}/members/{projectUser}', [ProjectController::cla
 Route::delete('projects/{project}/members/{projectUser}', [ProjectController::class, 'removeMember'])
     ->middleware(['auth:sanctum'])
     ->scopeBindings();
-Route::get('projects/{project}/github-config', [ProjectController::class, 'githubConfig'])->middleware(['auth:sanctum']);
+Route::get('projects/{project}/intergrations', [ProjectController::class, 'githubConfig'])->middleware(['auth:sanctum']);
 Route::get('projects/{project}/bugs', [BugController::class, 'index'])->middleware(['auth:sanctum']);
 Route::get('projects/{project}/dependencies', [DependencyController::class, 'index'])->middleware(['auth:sanctum']);
 Route::get('projects/{project}/dependencies/map', [DependencyController::class, 'map'])->middleware(['auth:sanctum']);
