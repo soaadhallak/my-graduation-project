@@ -15,7 +15,7 @@ git pull origin main
 
 # Install PHP dependencies
 echo "Installing PHP dependencies..."
-composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist --no-scripts
+composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist
 
 # Run migrations
 echo "Running migrations..."
