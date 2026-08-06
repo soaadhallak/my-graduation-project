@@ -41,8 +41,18 @@ class Project extends Model
     {
         return $this->belongsToMany(User::class, 'project_users')
             ->using(ProjectUser::class)
-            ->withPivot('role')
+            ->withPivot('id', 'role')
             ->withTimestamps();
+    }
+
+    public function projectUsers(): HasMany
+    {
+        return $this->hasMany(ProjectUser::class);
+    }
+
+    public function invitations(): HasMany
+    {
+        return $this->hasMany(Invitation::class);
     }
 
     public function bugs(): HasMany

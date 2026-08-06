@@ -36,4 +36,32 @@ class ProjectService
             return $project;
         });
     }
+
+    public function updateMemberRole(ProjectUser $projectUser, string $role): ProjectUser
+    {
+        return DB::transaction(function () use ($projectUser, $role) {
+            $projectUser->update(['role' => $role]);
+
+            $user = $projectUser->user;
+            setPermissionsTeamId($projectUser->project_id);
+            $user->syncRoles([$role]);
+
+            return $projectUser->load('user');
+        });
+    }
+
+    public function removeMember(ProjectUser $projectUser): ProjectUser
+    {
+        return DB::transaction(function () use ($projectUser) {
+            $projectUser->loadMissing('user');
+            $user = $projectUser->user;
+
+            $projectUser->delete();
+
+            setPermissionsTeamId($projectUser->project_id);
+            $user->syncRoles([]);
+
+            return $projectUser;
+        });
+    }
 }

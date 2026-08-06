@@ -31,22 +31,30 @@ Route::prefix('auth')->group(function(){
 
 Route::apiResource('projects', ProjectController::class)->middleware(['auth:sanctum']);
 Route::get('projects/{project}/members', [ProjectController::class, 'members'])->middleware(['auth:sanctum']);
+Route::patch('projects/{project}/members/{projectUser}', [ProjectController::class, 'updateMemberRole'])
+    ->middleware(['auth:sanctum'])
+    ->scopeBindings();
+Route::delete('projects/{project}/members/{projectUser}', [ProjectController::class, 'removeMember'])
+    ->middleware(['auth:sanctum'])
+    ->scopeBindings();
 Route::get('projects/{project}/github-config', [ProjectController::class, 'githubConfig'])->middleware(['auth:sanctum']);
+Route::get('projects/{project}/bugs', [BugController::class, 'index'])->middleware(['auth:sanctum']);
+Route::get('projects/{project}/dependencies', [DependencyController::class, 'index'])->middleware(['auth:sanctum']);
+Route::get('projects/{project}/dependencies/map', [DependencyController::class, 'map'])->middleware(['auth:sanctum']);
+
+
 Route::post('github/repositories', [GithubProjectController::class, 'getRepositories'])->middleware('auth:sanctum');
 Route::post('github/initialize-project', [GithubProjectController::class, 'initializeProject'])->middleware('auth:sanctum');
 Route::get('github/install-link', [GithubProjectController::class, 'getInstallLink'])->middleware('auth:sanctum');
 
-Route::post('invitations/{project}/invite', [InvitationController::class, 'inviteMember'])->middleware(['auth:sanctum']);
+Route::get('projects/{project}/invitations', [InvitationController::class, 'index'])->middleware(['auth:sanctum']);
+Route::post('projects/{project}/invitations', [InvitationController::class, 'inviteMember'])->middleware(['auth:sanctum']);
 Route::post('invitations/accept', [InvitationController::class, 'acceptInvitation'])->middleware(GuestOrAuthenticated::class);
 
 Route::apiResource('bugs', BugController::class)->middleware(['auth:sanctum'])->except(['index']);
 Route::get('bugs/{bug}/submissions', [BugController::class, 'submissions'])->middleware(['auth:sanctum']);
 Route::post('/bugs/{bug}/test-pass', [BugController::class, 'passBug'])->middleware(['auth:sanctum']);
 Route::post('/bugs/{bug}/test-fail', [BugController::class, 'failBug'])->middleware(['auth:sanctum']);
-
-Route::get('projects/{project}/bugs', [BugController::class, 'index'])->middleware(['auth:sanctum']);
-Route::get('projects/{project}/dependencies', [DependencyController::class, 'index'])->middleware(['auth:sanctum']);
-Route::get('projects/{project}/dependencies/map', [DependencyController::class, 'map'])->middleware(['auth:sanctum']);
 
 Route::apiResource('my-bugs', BugUserController::class)->middleware(['auth:sanctum']);
 

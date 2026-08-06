@@ -3,12 +3,15 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Project;
+use App\Models\ProjectUser;
 use App\Services\ProjectService;
 use App\Actions\Projects\CreateProjectAction;
 use App\Actions\Projects\UpdateProjectAction;
 use App\Actions\Projects\DeleteProjectAction;
 use App\Data\ProjectData;
+use App\Http\Requests\RemoveMemberRequest;
 use App\Http\Requests\StoreProjectRequest;
+use App\Http\Requests\UpdateMemberRoleRequest;
 use App\Http\Requests\UpdateProjectRequest;
 use App\Http\Resources\GithubConfigResource;
 use App\Http\Resources\ProjectMemberResource;
@@ -77,9 +80,35 @@ class ProjectController extends Controller
     {
         Gate::authorize('view', $project);
 
-        return ProjectMemberResource::collection($project->members()->get())
+        return ProjectMemberResource::collection(
+            $project->projectUsers()->with('user')->get()
+        )->additional([
+            'message' => ResponseMessages::RETRIEVED->message()
+        ]);
+    }
+
+
+    public function updateMemberRole(UpdateMemberRoleRequest $request, Project $project, ProjectUser $projectUser): ProjectMemberResource
+    {
+        $member = $this->projectService->updateMemberRole(
+            $projectUser,
+            $request->validated('role')
+        );
+
+        return ProjectMemberResource::make($member)
             ->additional([
-                'message' => ResponseMessages::RETRIEVED->message()
+                'message' => ResponseMessages::UPDATED->message()
+            ]);
+    }
+
+
+    public function removeMember(RemoveMemberRequest $request, Project $project, ProjectUser $projectUser): ProjectMemberResource
+    {
+        $member = $this->projectService->removeMember($projectUser);
+
+        return ProjectMemberResource::make($member)
+            ->additional([
+                'message' => ResponseMessages::DELETED->message()
             ]);
     }
 

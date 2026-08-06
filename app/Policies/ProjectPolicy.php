@@ -3,8 +3,10 @@
 namespace App\Policies;
 
 use App\Models\Project;
+use App\Models\ProjectUser;
 use App\Models\User;
 use Illuminate\Auth\Access\Response;
+use App\Enums\UserRole;
 
 class ProjectPolicy
 {
@@ -44,5 +46,15 @@ class ProjectPolicy
             ->where('user_id', $user->id)
             ->where('role', 'project_manager')
             ->exists();
+    }
+
+    public function updateMemberRole(User $user, Project $project): bool
+    {
+        return $user->isMemberOfProject($project->id, UserRole::PROJECT_MANAGER->value);
+    }
+
+    public function removeMember(User $user, Project $project): bool
+    {
+        return $user->isMemberOfProject($project->id, UserRole::PROJECT_MANAGER->value);
     }
 }

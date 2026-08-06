@@ -21,7 +21,8 @@ class ProjectResource extends JsonResource
             'members' => $this->whenLoaded('members', function () {
                 return $this->members->map(function ($member) {
                     return [
-                        'id' => $member->id,
+                        'id' => $member->pivot->id,
+                        'userId' => $member->id,
                         'name' => $member->name,
                         'email' => $member->email,
                         'role' => $member->pivot->role,
