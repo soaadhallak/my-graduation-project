@@ -103,9 +103,16 @@ class BugController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
+    public function destroy(Bug $bug): BugResource
     {
-        //
+        Gate::authorize('delete', $bug);
+
+        $bug->delete();
+
+        return BugResource::make($bug)
+            ->additional([
+                'message' => ResponseMessages::DELETED->message()
+            ]);
     }
 
     public function passBug(Bug $bug, PassBugTestAction $passBugTestAction, PassBugTestRequest $request)

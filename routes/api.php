@@ -13,6 +13,7 @@ use App\Http\Controllers\Api\BugSubmissionController;
 use App\Http\Controllers\Api\BugUserController;
 use App\Http\Controllers\Api\DependencyController;
 use App\Http\Controllers\Api\LabelController;
+use App\Http\Controllers\Api\DashboardController;
 use App\Http\Controllers\Api\NotificationController;
 use App\Http\Controllers\Api\UserNotificationTokenController;
 
@@ -21,9 +22,12 @@ Route::get('/user', function (Request $request) {
     return $request->user();
 })->middleware('auth:sanctum');
 
+Route::get('dashboard/stats', [DashboardController::class, 'stats'])->middleware(['auth:sanctum']);
+
 Route::prefix('auth')->group(function(){
     Route::post('/',[AuthController::class,'register']);
     Route::post('/login',[AuthController::class,'login']);
+    Route::get('/me', [AuthController::class, 'me'])->middleware('auth:sanctum');
     Route::post('/logout',[AuthController::class,'logout'])->middleware('auth:sanctum');
     Route::post('/forgot-password', [PasswordResetController::class, 'sendResetLink']);
     Route::post('/reset-password', [PasswordResetController::class, 'ResetPssword']);

@@ -44,6 +44,14 @@ class AuthController extends Controller
             ]);
     }
 
+    public function me(Request $request): UserResource
+    {
+        return UserResource::make($request->user()->load(['media']))
+            ->additional([
+                'message' => ResponseMessages::RETRIEVED->message(),
+            ]);
+    }
+
     public function logout(Request $request, NotificationTokenService $notificationTokenService): UserResource
     {
         $user = $request->user();
