@@ -58,6 +58,7 @@ Route::post('invitations/accept', [InvitationController::class, 'acceptInvitatio
 
 Route::apiResource('bugs', BugController::class)->middleware(['auth:sanctum'])->except(['index']);
 Route::get('bugs/{bug}/submissions', [BugController::class, 'submissions'])->middleware(['auth:sanctum']);
+Route::get('bugs/{bug}/histories', [BugController::class, 'histories'])->middleware(['auth:sanctum']);
 Route::post('/bugs/{bug}/test-pass', [BugController::class, 'passBug'])->middleware(['auth:sanctum']);
 Route::post('/bugs/{bug}/test-fail', [BugController::class, 'failBug'])->middleware(['auth:sanctum']);
 

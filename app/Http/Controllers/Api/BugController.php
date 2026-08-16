@@ -11,6 +11,7 @@ use App\Http\Requests\FailBugTestRequest;
 use App\Http\Requests\PassBugTestRequest;
 use App\Http\Requests\StoreBugRequest;
 use App\Http\Requests\UpdateBugRequest;
+use App\Http\Resources\BugHistoryResource;
 use App\Http\Resources\BugResource;
 use App\Http\Resources\BugSubmissionResource;
 use App\Models\Bug;
@@ -154,6 +155,18 @@ class BugController extends Controller
             ->latest()->get();
 
         return BugSubmissionResource::collection($submissions)
+            ->additional([
+                'message' => ResponseMessages::RETRIEVED->message()
+            ]);
+    }
+
+    public function histories(Bug $bug): AnonymousResourceCollection
+    {
+        Gate::authorize('view', $bug);
+
+        $histories = $bug->histories()->with('user')->get();
+
+        return BugHistoryResource::collection($histories)
             ->additional([
                 'message' => ResponseMessages::RETRIEVED->message()
             ]);
