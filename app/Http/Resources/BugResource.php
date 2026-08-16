@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources;
 
+use App\Services\BugPermissionService;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -34,6 +35,7 @@ class BugResource extends JsonResource
                 'latestTestFailure', 
                 $this->latestTestFailure?->notes
             ),
+            'permissions' => app(BugPermissionService::class)->for($request->user(), $this->resource),
             'createdAt' => $this->created_at?->diffForHumans(),
         ];
     }
