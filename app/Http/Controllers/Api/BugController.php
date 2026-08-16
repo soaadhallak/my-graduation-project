@@ -164,9 +164,7 @@ class BugController extends Controller
     {
         Gate::authorize('view', $bug);
 
-        $histories = $bug->histories()->with('user')->get();
-
-        return BugHistoryResource::collection($histories)
+        return BugHistoryResource::collection($this->bugService->getHistories($bug))
             ->additional([
                 'message' => ResponseMessages::RETRIEVED->message()
             ]);

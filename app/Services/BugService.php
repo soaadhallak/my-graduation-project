@@ -8,6 +8,7 @@ use App\Enums\BugStatuses;
 use App\Models\Bug;
 use App\Models\BugHistory;
 use App\Models\User;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Mrmarchone\LaravelAutoCrud\Helpers\MediaHelper;
@@ -117,6 +118,40 @@ class BugService
 
             return $bug;
         });
+    }
+
+    public function getHistories(Bug $bug): Collection
+    {
+        $histories = $bug->histories()->with('user')->get();
+
+        $assigneeIds = $histories
+            ->filter(fn ($history) => $history->type === BugHistoryTypes::ASSIGNMENT_CHANGE)
+            ->flatMap(fn ($history) => [$history->from_state, $history->to_state])
+            ->filter()
+            ->unique()
+            ->values();
+
+        $assignees = User::query()
+            ->whereIn('id', $assigneeIds)
+            ->get()
+            ->keyBy('id');
+
+        $histories->each(function ($history) use ($assignees) {
+            if ($history->type !== BugHistoryTypes::ASSIGNMENT_CHANGE) {
+                return;
+            }
+
+            $history->setRelation(
+                'fromAssignee',
+                $history->from_state ? $assignees->get((int) $history->from_state) : null
+            );
+            $history->setRelation(
+                'toAssignee',
+                $history->to_state ? $assignees->get((int) $history->to_state) : null
+            );
+        });
+
+        return $histories;
     }
 
     protected function statusValue(mixed $status): string
