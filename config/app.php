@@ -54,6 +54,8 @@ return [
 
     'url' => env('APP_URL', 'http://localhost'),
 
+    'frontend_url' => rtrim(env('FRONTEND_URL', 'https://bugtrak.dallal-syria.site'), '/'),
+
     /*
     |--------------------------------------------------------------------------
     | Application Timezone
